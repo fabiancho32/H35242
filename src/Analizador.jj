@@ -1,6 +1,5 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- * Author: Cherman
  */
 options
 {
@@ -69,8 +68,13 @@ TOKEN : /* OPERATORS */
 | < ASIGNACION : "=" >
 | < RESTA : "-" >
 | < DIVISION : "/" >
-| < MAYORQUE : ">" >
-| < MENORQUE : "<" >
+| < MAYORQUE :">">
+| < MENORQUE :"<">
+}
+
+TOKEN : /*TERMINAL DE LINEA*/
+{
+  < TERMINALDELINEA: "." >
 }
 
 TOKEN : /*PALABRAS RESERVADAS*/
@@ -79,27 +83,39 @@ TOKEN : /*PALABRAS RESERVADAS*/
 | < STRING: "Cadena" >
 | < CONDICIONALSI: "Si" >
 | < CONDICIONALDELOCONTRARIO : "Sino" >
-| < ESCRIBIR : "Escribir" >
-| < LEER : "Leer" >
+| < CONDICIONALENTONCES : "Entonces" >
+| < ESCRIBIR: "Escribir" >
+| < LEER: "Leer">
 }
 
 TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
 {
-  < NUMEROENTERO : (< DIGIT >)+>
+  < NUMEROENTERO : (["-"]|["+"])?(< DIGIT >)+>
 | < #DIGIT : [ "0"-"9" ] >
 }
 
 
 TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
 {
-  < IDENTIFICADOR :["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+  < IDENTIFICADOR :["$"] ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
 }
+
+TOKEN : /*COMENTARIOS*/
+{
+  < COMENTARIOS: (["#"])(["#"])(~["#"])*(["#"])(["#"]) >
+}
+
+TOKEN : /*CADENA DE TEXTO*/
+{
+  < CADENADETEXTO: (["\""])(~["\""])*(["\""])>
+}
+
 
 TOKEN : /*Simbolos*/
 {
   < CORCHETEABRE: "[" >
 | < CORCHETECIERRA: "]" >
-| < PUNTO: "." >
+| < COMA: "," >
 }
 
 
@@ -124,10 +140,8 @@ void TokenElement():
 | pieza = <ASIGNACION> { numero++; grabarDatosPieza(numero, "ASIGNACION", pieza); }
 | pieza = <IDENTIFICADOR> { numero++; grabarDatosPieza(numero, "IDENTIFICADOR", pieza); }
 | pieza = <NUMEROENTERO> { numero++; grabarDatosPieza(numero, "NUMEROENTERO", pieza); }
-| pieza = <PUNTO> { numero++; grabarDatosPieza(numero, "PUNTO", pieza); }
+| pieza = <COMA> { numero++; grabarDatosPieza(numero, "COMA", pieza); }
 | pieza = <CORCHETEABRE> { numero++; grabarDatosPieza(numero, "CORCHETEABRE", pieza); }
 | pieza = <CORCHETECIERRA> { numero++; grabarDatosPieza(numero, "CORCHETECIERRA", pieza); }
-  pieza = <MAYORQUE> { numero++; grabarDatosPieza(numero, "MAYORQUE", pieza); }
-  pieza = <MENORQUE> { numero++; grabarDatosPieza(numero, "MENORQUE", pieza); }
 
 }

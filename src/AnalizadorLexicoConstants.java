@@ -23,29 +23,37 @@ public interface AnalizadorLexicoConstants {
   /** RegularExpression Id. */
   int MENORQUE = 12;
   /** RegularExpression Id. */
-  int ENTERO = 13;
+  int TERMINALDELINEA = 13;
   /** RegularExpression Id. */
-  int STRING = 14;
+  int ENTERO = 14;
   /** RegularExpression Id. */
-  int CONDICIONALSI = 15;
+  int STRING = 15;
   /** RegularExpression Id. */
-  int CONDICIONALDELOCONTRARIO = 16;
+  int CONDICIONALSI = 16;
   /** RegularExpression Id. */
-  int ESCRIBIR = 17;
+  int CONDICIONALDELOCONTRARIO = 17;
   /** RegularExpression Id. */
-  int LEER = 18;
+  int CONDICIONALENTONCES = 18;
   /** RegularExpression Id. */
-  int NUMEROENTERO = 19;
+  int ESCRIBIR = 19;
   /** RegularExpression Id. */
-  int DIGIT = 20;
+  int LEER = 20;
   /** RegularExpression Id. */
-  int IDENTIFICADOR = 21;
+  int NUMEROENTERO = 21;
   /** RegularExpression Id. */
-  int CORCHETEABRE = 22;
+  int DIGIT = 22;
   /** RegularExpression Id. */
-  int CORCHETECIERRA = 23;
+  int IDENTIFICADOR = 23;
   /** RegularExpression Id. */
-  int PUNTO = 24;
+  int COMENTARIOS = 24;
+  /** RegularExpression Id. */
+  int CADENADETEXTO = 25;
+  /** RegularExpression Id. */
+  int CORCHETEABRE = 26;
+  /** RegularExpression Id. */
+  int CORCHETECIERRA = 27;
+  /** RegularExpression Id. */
+  int COMA = 28;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -65,18 +73,22 @@ public interface AnalizadorLexicoConstants {
     "\"/\"",
     "\">\"",
     "\"<\"",
+    "\".\"",
     "\"Numero\"",
     "\"Cadena\"",
     "\"Si\"",
     "\"Sino\"",
+    "\"Entonces\"",
     "\"Escribir\"",
     "\"Leer\"",
     "<NUMEROENTERO>",
     "<DIGIT>",
     "<IDENTIFICADOR>",
+    "<COMENTARIOS>",
+    "<CADENADETEXTO>",
     "\"[\"",
     "\"]\"",
-    "\".\"",
+    "\",\"",
   };
 
 }

@@ -55,7 +55,7 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
       case IDENTIFICADOR:
       case CORCHETEABRE:
       case CORCHETECIERRA:
-      case PUNTO:
+      case COMA:
         ;
         break;
       default:
@@ -97,9 +97,9 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
       pieza = jj_consume_token(NUMEROENTERO);
                            numero++; grabarDatosPieza(numero, "NUMEROENTERO", pieza);
       break;
-    case PUNTO:
-      pieza = jj_consume_token(PUNTO);
-                    numero++; grabarDatosPieza(numero, "PUNTO", pieza);
+    case COMA:
+      pieza = jj_consume_token(COMA);
+                   numero++; grabarDatosPieza(numero, "COMA", pieza);
       break;
     case CORCHETEABRE:
       pieza = jj_consume_token(CORCHETEABRE);
@@ -108,10 +108,6 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
     case CORCHETECIERRA:
       pieza = jj_consume_token(CORCHETECIERRA);
                              numero++; grabarDatosPieza(numero, "CORCHETECIERRA", pieza);
-      pieza = jj_consume_token(MAYORQUE);
-                       numero++; grabarDatosPieza(numero, "MAYORQUE", pieza);
-      pieza = jj_consume_token(MENORQUE);
-                       numero++; grabarDatosPieza(numero, "MENORQUE", pieza);
       break;
     default:
       jj_la1[1] = jj_gen;
@@ -136,7 +132,7 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x1e807c0,0x1e807c0,};
+      jj_la1_0 = new int[] {0x1ca007c0,0x1ca007c0,};
    }
 
   /** Constructor with InputStream. */
@@ -274,7 +270,7 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[25];
+    boolean[] la1tokens = new boolean[29];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -288,7 +284,7 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
         }
       }
     }
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 29; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
