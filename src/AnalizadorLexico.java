@@ -4,7 +4,7 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
    static int numero = 0;
 
    private static void grabarLexema (int n, String token,  String lexema, int nL, int nC) {
-      System.out.println(n + "- Token: "+  token + " Lexema:" + lexema + " Linea: "+ nL + "Columna:" + nC);
+      System.out.println(n + "- Token: "+  token + " Lexema: " + lexema + " Linea: "+ nL + " Columna:" + nC);
    }
 
    private static void grabarDatosPieza(int n, String token, Token pieza) {
@@ -51,8 +51,20 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
       case ASIGNACION:
       case RESTA:
       case DIVISION:
+      case MAYORQUE:
+      case MENORQUE:
+      case TERMINALDELINEA:
+      case ENTERO:
+      case STRING:
+      case CONDICIONALSI:
+      case CONDICIONALDELOCONTRARIO:
+      case CONDICIONALENTONCES:
+      case ESCRIBIR:
+      case LEER:
       case NUMEROENTERO:
       case IDENTIFICADOR:
+      case COMENTARIOS:
+      case CADENADETEXTO:
       case CORCHETEABRE:
       case CORCHETECIERRA:
       case COMA:
@@ -70,12 +82,17 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
  Token pieza;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case SUMA:
-      pieza = jj_consume_token(SUMA);
+      /*OPERADORES*/
+        pieza = jj_consume_token(SUMA);
                    numero++; grabarDatosPieza(numero, "SUMA" , pieza);
       break;
     case MULTIPLICACION:
       pieza = jj_consume_token(MULTIPLICACION);
                              numero++; grabarDatosPieza(numero, "MULTIPLICACION", pieza);
+      break;
+    case ASIGNACION:
+      pieza = jj_consume_token(ASIGNACION);
+                         numero++; grabarDatosPieza(numero, "ASIGNACION", pieza);
       break;
     case RESTA:
       pieza = jj_consume_token(RESTA);
@@ -85,17 +102,61 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
       pieza = jj_consume_token(DIVISION);
                        numero++; grabarDatosPieza(numero, "DIVISION", pieza);
       break;
-    case ASIGNACION:
-      pieza = jj_consume_token(ASIGNACION);
-                         numero++; grabarDatosPieza(numero, "ASIGNACION", pieza);
+    case MAYORQUE:
+      pieza = jj_consume_token(MAYORQUE);
+                       numero++; grabarDatosPieza(numero, "MAYORQUE", pieza);
+      break;
+    case MENORQUE:
+      pieza = jj_consume_token(MENORQUE);
+                       numero++; grabarDatosPieza(numero, "MENORQUE", pieza);
+      break;
+    case TERMINALDELINEA:
+      pieza = jj_consume_token(TERMINALDELINEA);
+                              numero++; grabarDatosPieza(numero, "TERMINALDELINEA", pieza);
+      break;
+    case ENTERO:
+      pieza = jj_consume_token(ENTERO);
+                     numero++; grabarDatosPieza(numero, "ENTERO", pieza);
+      break;
+    case STRING:
+      pieza = jj_consume_token(STRING);
+                     numero++; grabarDatosPieza(numero, "STRING", pieza);
+      break;
+    case CONDICIONALSI:
+      pieza = jj_consume_token(CONDICIONALSI);
+                            numero++; grabarDatosPieza(numero, "CONDICIONALSI", pieza);
+      break;
+    case CONDICIONALDELOCONTRARIO:
+      pieza = jj_consume_token(CONDICIONALDELOCONTRARIO);
+                                       numero++; grabarDatosPieza(numero, "CONDICIONALDELOCONTRARIO", pieza);
+      break;
+    case CONDICIONALENTONCES:
+      pieza = jj_consume_token(CONDICIONALENTONCES);
+                                  numero++; grabarDatosPieza(numero, "CONDICIONALENTONCES", pieza);
+      break;
+    case ESCRIBIR:
+      pieza = jj_consume_token(ESCRIBIR);
+                       numero++; grabarDatosPieza(numero, "ESCRIBIR", pieza);
+      break;
+    case LEER:
+      pieza = jj_consume_token(LEER);
+                   numero++; grabarDatosPieza(numero, "LEER", pieza);
+      break;
+    case NUMEROENTERO:
+      pieza = jj_consume_token(NUMEROENTERO);
+                           numero++; grabarDatosPieza(numero, "NUMEROENTERO", pieza);
       break;
     case IDENTIFICADOR:
       pieza = jj_consume_token(IDENTIFICADOR);
                             numero++; grabarDatosPieza(numero, "IDENTIFICADOR", pieza);
       break;
-    case NUMEROENTERO:
-      pieza = jj_consume_token(NUMEROENTERO);
-                           numero++; grabarDatosPieza(numero, "NUMEROENTERO", pieza);
+    case COMENTARIOS:
+      pieza = jj_consume_token(COMENTARIOS);
+                          numero++; grabarDatosPieza(numero, "COMENTARIOS", pieza);
+      break;
+    case CADENADETEXTO:
+      pieza = jj_consume_token(CADENADETEXTO);
+                            numero++; grabarDatosPieza(numero, "CADENADETEXTO", pieza);
       break;
     case COMA:
       pieza = jj_consume_token(COMA);
@@ -132,7 +193,7 @@ public class AnalizadorLexico implements AnalizadorLexicoConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x1ca007c0,0x1ca007c0,};
+      jj_la1_0 = new int[] {0x1fbfffc0,0x1fbfffc0,};
    }
 
   /** Constructor with InputStream. */

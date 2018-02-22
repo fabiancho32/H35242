@@ -14,7 +14,7 @@ public class AnalizadorLexico
    static int numero = 0;
 
    private static void grabarLexema (int n, String token,  String lexema, int nL, int nC) {
-      System.out.println(n + "- Token: "+  token + " Lexema:" + lexema + " Linea: "+ nL + "Columna:" + nC);
+      System.out.println(n + "- Token: "+  token + " Lexema: " + lexema + " Linea: "+ nL + " Columna:" + nC);
    }  
 
    private static void grabarDatosPieza(int n, String token, Token pieza) {
@@ -133,15 +133,41 @@ void TokenList():
 void TokenElement():
 {Token pieza; }
 {
+/*OPERADORES*/
   pieza = <SUMA> { numero++; grabarDatosPieza(numero, "SUMA" , pieza); }
 | pieza = <MULTIPLICACION> { numero++; grabarDatosPieza(numero, "MULTIPLICACION", pieza); }
+| pieza = <ASIGNACION> { numero++; grabarDatosPieza(numero, "ASIGNACION", pieza); }
 | pieza = <RESTA> { numero++; grabarDatosPieza(numero, "RESTA", pieza); }
 | pieza = <DIVISION> { numero++; grabarDatosPieza(numero, "DIVISION", pieza); }
-| pieza = <ASIGNACION> { numero++; grabarDatosPieza(numero, "ASIGNACION", pieza); }
-| pieza = <IDENTIFICADOR> { numero++; grabarDatosPieza(numero, "IDENTIFICADOR", pieza); }
+| pieza = <MAYORQUE> { numero++; grabarDatosPieza(numero, "MAYORQUE", pieza); }
+| pieza = <MENORQUE> { numero++; grabarDatosPieza(numero, "MENORQUE", pieza); }
+
+/*TERMINAL DE LINEA*/
+| pieza = <TERMINALDELINEA> { numero++; grabarDatosPieza(numero, "TERMINALDELINEA", pieza); }
+
+/*PALABRAS RESERVADAS*/
+| pieza = <ENTERO> { numero++; grabarDatosPieza(numero, "ENTERO", pieza); }
+| pieza = <STRING> { numero++; grabarDatosPieza(numero, "STRING", pieza); }
+| pieza = <CONDICIONALSI> { numero++; grabarDatosPieza(numero, "CONDICIONALSI", pieza); }
+| pieza = <CONDICIONALDELOCONTRARIO> { numero++; grabarDatosPieza(numero, "CONDICIONALDELOCONTRARIO", pieza); }
+| pieza = <CONDICIONALENTONCES> { numero++; grabarDatosPieza(numero, "CONDICIONALENTONCES", pieza); }
+| pieza = <ESCRIBIR> { numero++; grabarDatosPieza(numero, "ESCRIBIR", pieza); }
+| pieza = <LEER> { numero++; grabarDatosPieza(numero, "LEER", pieza); }
+
+/*NUMEROS*/
 | pieza = <NUMEROENTERO> { numero++; grabarDatosPieza(numero, "NUMEROENTERO", pieza); }
+
+/*IDENTIFICADORES*/
+| pieza = <IDENTIFICADOR> { numero++; grabarDatosPieza(numero, "IDENTIFICADOR", pieza); }
+
+/*COMENTARIOS*/
+| pieza = <COMENTARIOS> { numero++; grabarDatosPieza(numero, "COMENTARIOS", pieza); }
+
+/*CADENA DE TEXTO*/
+| pieza = <CADENADETEXTO> { numero++; grabarDatosPieza(numero, "CADENADETEXTO", pieza); }
+
+/*SIMBOLOS*/
 | pieza = <COMA> { numero++; grabarDatosPieza(numero, "COMA", pieza); }
 | pieza = <CORCHETEABRE> { numero++; grabarDatosPieza(numero, "CORCHETEABRE", pieza); }
 | pieza = <CORCHETECIERRA> { numero++; grabarDatosPieza(numero, "CORCHETECIERRA", pieza); }
-
 }
