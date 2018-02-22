@@ -1,0 +1,132 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(AnalizadorLexico)
+
+public class AnalizadorLexico
+{
+
+   static int numero = 0;
+
+   private static void grabarLexema (int n, String token,  String lexema, int nL, int nC) {
+      System.out.println(n + "- Token: "+  token + " Lexema:" + lexema + " Linea: "+ nL + "Columna:" + nC);
+   }  
+
+   private static void grabarDatosPieza(int n, String token, Token pieza) {
+      grabarLexema(n, token, pieza.image, pieza.beginLine, pieza.beginColumn );      
+   }
+
+    
+  public static void main(String args []) throws ParseException
+  {
+	try
+	{
+	   System.out.println("Ingrese el código a analizar:");
+	   AnalizadorLexico parser = new AnalizadorLexico(System.in);
+       parser.TokenList();
+
+       System.out.println("Analisis terminado:");
+       System.out.println("no se han hallado errores léxicos");
+       
+       
+    }catch(TokenMgrError te)
+	{
+	   System.out.println("Se han encontrado errores lexicos.");
+	   System.out.println(te.getMessage());
+	   
+	} 
+    catch(ParseException e)
+	{
+	   System.out.println("Analizador: Se han encontrado errores en el analisis.");
+	   System.out.println(e.getMessage());	   
+	}    
+  }
+}
+
+PARSER_END(AnalizadorLexico)
+
+/* Espacio en blanco, saltos de linea, tabulares */
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+
+TOKEN : /* OPERATORS */
+{
+  < SUMA : "+" >
+| < MULTIPLICACION : "*" >
+| < ASIGNACION : "=" >
+| < RESTA : "-" >
+| < DIVISION : "/" >
+| < MAYORQUE : ">" >
+| < MENORQUE : "<" >
+}
+
+TOKEN : /*PALABRAS RESERVADAS*/
+{
+  < ENTERO: "Numero" >
+| < STRING: "Cadena" >
+| < CONDICIONALSI: "Si" >
+| < CONDICIONALDELOCONTRARIO : "Sino" >
+| < ESCRIBIR : "Escribir" >
+| < LEER : "Leer" >
+}
+
+TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
+{
+  < NUMEROENTERO : (< DIGIT >)+>
+| < #DIGIT : [ "0"-"9" ] >
+}
+
+
+TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
+{
+  < IDENTIFICADOR :["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+}
+
+TOKEN : /*Simbolos*/
+{
+  < CORCHETEABRE: "[" >
+| < CORCHETECIERRA: "]" >
+| < PUNTO: "." >
+}
+
+
+/**
+ * Reconoce el contenido completo de un archivo
+ *
+ * TokenList -> (TokenElement)* 
+ */
+void TokenList():
+{}
+{ 
+  ( TokenElement() )*  
+}
+
+void TokenElement():
+{Token pieza; }
+{
+  pieza = <SUMA> { numero++; grabarDatosPieza(numero, "SUMA" , pieza); }
+| pieza = <MULTIPLICACION> { numero++; grabarDatosPieza(numero, "MULTIPLICACION", pieza); }
+| pieza = <RESTA> { numero++; grabarDatosPieza(numero, "RESTA", pieza); }
+| pieza = <DIVISION> { numero++; grabarDatosPieza(numero, "DIVISION", pieza); }
+| pieza = <ASIGNACION> { numero++; grabarDatosPieza(numero, "ASIGNACION", pieza); }
+| pieza = <IDENTIFICADOR> { numero++; grabarDatosPieza(numero, "IDENTIFICADOR", pieza); }
+| pieza = <NUMEROENTERO> { numero++; grabarDatosPieza(numero, "NUMEROENTERO", pieza); }
+| pieza = <PUNTO> { numero++; grabarDatosPieza(numero, "PUNTO", pieza); }
+| pieza = <CORCHETEABRE> { numero++; grabarDatosPieza(numero, "CORCHETEABRE", pieza); }
+| pieza = <CORCHETECIERRA> { numero++; grabarDatosPieza(numero, "CORCHETECIERRA", pieza); }
+  pieza = <MAYORQUE> { numero++; grabarDatosPieza(numero, "MAYORQUE", pieza); }
+  pieza = <MENORQUE> { numero++; grabarDatosPieza(numero, "MENORQUE", pieza); }
+
+}
