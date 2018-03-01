@@ -88,6 +88,14 @@ TOKEN : /*PALABRAS RESERVADAS*/
 | < LEER: "Leer">
 }
 
+TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
+{
+  < IDENTIFICADOR :(["$"])( < LMINUS >|< LMAYUS > )( < LMINUS >|< LMAYUS > | < DIGIT > | ["-"])* >
+| < #DIGIT : [ "0"-"9" ] >
+| < #LMINUS : [ "a"-"z" ] >
+| < #LMAYUS : [ "A"-"Z" ] >
+}
+
 TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
 {
   < NUMEROENTERO : (["-"]|["+"])?(< DIGIT >)+>
@@ -95,10 +103,7 @@ TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
 }
 
 
-TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
-{
-  < IDENTIFICADOR :["$"] ["a"-"z","A"-"Z","_"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
-}
+
 
 TOKEN : /*COMENTARIOS*/
 {
@@ -108,6 +113,11 @@ TOKEN : /*COMENTARIOS*/
 TOKEN : /*CADENA DE TEXTO*/
 {
   < CADENADETEXTO: (["\""])(~["\""])*(["\""])>
+}
+
+TOKEN : /*CONCATENAR*/
+{
+  < CONCATENACION: (((< CADENADETEXTO >)(["@"])(< CADENA DE TEXTO >))|(< IDENTIFICADOR >)(["@"])(< CADENA DE TEXTO >))>
 }
 
 
