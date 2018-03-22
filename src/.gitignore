@@ -5,3 +5,11 @@
 /SimpleCharStream.java
 /Token.java
 /TokenMgrError.java
+/comp.java
+/compConstants.java
+/compTokenManager.java
+/AnalizadorSintactico.jj
+/compTreeConstants.java
+/JJTcompState.java
+/Node.java
+/SimpleNode.java

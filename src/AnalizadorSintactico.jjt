@@ -1,0 +1,214 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(comp)
+public class comp
+{
+  public static void main(String args []) throws ParseException
+  {
+    try
+    {
+      System.out.println("Ingrese el c\u00f3digo a analizar:");
+      comp analizador = new comp(System.in);
+      SimpleNode variable = analizador.Programa();
+      variable.dump("");
+      System.out.println("Se ha compilado con \u00e9xito");
+    }
+    catch (ParseException e)
+    {
+      System.err.println("Se han encontrado errores");
+      System.err.println(e.getMessage());
+    }
+  }
+}
+
+PARSER_END(comp)
+
+/* Espacio en blanco, saltos de linea, tabulares */
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| "\f"
+}
+
+TOKEN : /* OPERATORS */
+{
+  < SUMA : "+" >
+| < MULTIPLICACION : "*" >
+| < ASIGNACION : "=" >
+| < RESTA : "-" >
+| < DIVISION : "/" >
+| < MAYORQUE : ">" >
+| < MENORQUE : "<" >
+}
+
+TOKEN : /*TERMINAL DE LINEA*/
+{
+  < TERMINALDELINEA : "." >
+}
+
+TOKEN : /*PALABRAS RESERVADAS*/
+{
+  < ENTERO : "Numero" >
+| < STRING : "Cadena" >
+| < CONDICIONALSI : "Si" >
+| < CONDICIONALFINSI : "FinSi" >
+| < CONDICIONALDELOCONTRARIO : "Sino" >
+| < CONDICIONALENTONCES : "Entonces" >
+| < ESCRIBIR : "Escribir" >
+| < LEER : "Leer" >
+}
+
+TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
+{
+  < IDENTIFICADOR : [ "a"-"z", "A"-"Z" ] ([ "a"-"z", "A"-"Z", "0"-"9" ])* >
+| < #DIGIT : [ "0"-"9" ] >
+| < #LMINUS : [ "a"-"z" ] >
+}
+
+TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
+{
+  < NUMEROENTERO : 
+    (
+    [ "-" ]
+    )? 
+    (< DIGIT >)+ >
+}
+
+TOKEN : /*COMENTARIOS*/
+{
+  < COMENTARIOS : ([ "#" ]) ([ "#" ]) (~[ "#" ])* ([ "#" ]) ([ "#" ]) >
+}
+
+TOKEN : /*CADENA DE TEXTO*/
+{
+  < CADENADETEXTO : ([ "\"" ]) (~[ "\"" ])* ([ "\"" ]) >
+}
+
+TOKEN : /*CONCATENAR*/
+{
+  < CONCATENACION :
+    (
+      (
+        (< CADENADETEXTO >) ([ "@" ]) (< CADENADETEXTO >)
+      )
+    |
+      (
+        (< IDENTIFICADOR >) ([ "@" ]) (< CADENADETEXTO >)
+      )
+    |
+      (
+        (< CADENADETEXTO >) ([ "@" ]) (< IDENTIFICADOR >)
+      )
+    |
+      (
+        (< IDENTIFICADOR >) ([ "@" ]) (< IDENTIFICADOR >)
+      )
+    ) >
+}
+
+TOKEN : /*Simbolos*/
+{
+  < CORCHETEABRE : "[" >
+| < CORCHETECIERRA : "]" >
+| < COMA : "," >
+| < FINARCH : "?" >
+}
+
+SimpleNode Programa() :
+{}
+{
+  listadoSentencias()<FINARCH>{return jjtThis;}
+}
+
+void listadoSentencias() :
+{Token t;}
+{
+  (
+    SentenciaSmp() 
+    t =<TERMINALDELINEA>{jjtThis.value = t.image;}#PUNTO(true)
+  [listadoSentencias()]
+)
+}
+
+void SentenciaSmp() :
+{}
+{
+  condicional()
+| escribir()
+| asignacion()
+| declaracion()
+}
+
+void condicional() :
+{  Token t;}
+{
+  t = < CONDICIONALSI > {jjtThis.value = t.image;}#CONDICIONALSI(true)
+condicion() 
+t = < CONDICIONALENTONCES >{jjtThis.value = t.image;}#CONDICIONALENTONCES(true)
+listadoSentencias()
+[  t = < CONDICIONALDELOCONTRARIO >  {    jjtThis.value = t.image;  }  #CONDICIONALDELOCONTRARIO(true)
+listadoSentencias()
+]
+t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
+}
+
+void condicion() :
+{Token t;}
+{
+  /*Falta definir en el BNF*/
+  t = < CONDICIONALSI >  {    jjtThis.value = t.image;}#CONDICIONALSI(true)
+}
+
+void escribir() :
+{  Token t;}
+{
+  t = < ESCRIBIR >  {jjtThis.value = t.image;}#ESCRIBIR(true)
+  t = < CORCHETEABRE >{  jjtThis.value = t.image;}#CORCHETEABRE(true)
+valor() 
+t = < CORCHETECIERRA >{  jjtThis.value = t.image;}#CORCHETECIERRA(true)
+t = < TERMINALDELINEA >{  jjtThis.value = t.image;}#TERMINALDELINEA(true)
+}
+
+void asignacion() :
+{  Token t;}
+{
+  t = < IDENTIFICADOR >  {    jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
+t = < ASIGNACION >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+valor() 
+t = < TERMINALDELINEA >{  jjtThis.value = t.image;}#TERMINALDELINEA(true)
+}
+
+void valor() :
+{  Token t;}
+{
+  /*Falta definir en el BNF*/
+  t = < CONDICIONALSI >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
+}
+
+void declaracion() :
+{  Token t;}
+{
+  t = < ENTERO >  {    jjtThis.value = t.image;  }  #ENTERO(true)
+  t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+[ masIds() ]
+| t = < STRING >{  jjtThis.value = t.image;}#STRING(true)
+t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+[ masIds() ]
+}
+
+void masIds() :
+{  Token t;}
+{
+  t = < COMA >  {    jjtThis.value = t.image;  }  #COMA(true)
+  t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+[ masIds() ]
+}
