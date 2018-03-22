@@ -118,7 +118,18 @@ TOKEN : /*CONCATENAR*/
       (
         (< CADENADETEXTO >) ([ "@" ]) (< CADENADETEXTO >)
       )
-    | (< IDENTIFICADOR >) ([ "@" ]) (< CADENADETEXTO >)
+    |
+      (
+        (< IDENTIFICADOR >) ([ "@" ]) (< CADENADETEXTO >)
+      )
+    | 
+      (
+      	(< CADENADETEXTO >) ([ "@" ]) (< IDENTIFICADOR >)
+      )
+    |
+      (
+        (< IDENTIFICADOR >) ([ "@" ]) (< IDENTIFICADOR >)
+      )
     ) >
 }
 
