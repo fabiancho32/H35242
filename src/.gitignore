@@ -13,3 +13,8 @@
 /JJTcompState.java
 /Node.java
 /SimpleNode.java
+/AnalizadorSintacticoTreeConstants.java
+/JJTAnalizadorSintacticoState.java
+/AnalizadorSintactico.java
+/AnalizadorSintacticoConstants.java
+/AnalizadorSintacticoTokenManager.java

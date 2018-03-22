@@ -6,15 +6,15 @@ options
   static = true;
 }
 
-PARSER_BEGIN(comp)
-public class comp
+PARSER_BEGIN(AnalizadorSintactico)
+public class AnalizadorSintactico
 {
   public static void main(String args []) throws ParseException
   {
     try
     {
       System.out.println("Ingrese el c\u00f3digo a analizar:");
-      comp analizador = new comp(System.in);
+      AnalizadorSintactico analizador = new AnalizadorSintactico(System.in);
       SimpleNode variable = analizador.Programa();
       variable.dump("");
       System.out.println("Se ha compilado con \u00e9xito");
@@ -27,7 +27,7 @@ public class comp
   }
 }
 
-PARSER_END(comp)
+PARSER_END(AnalizadorSintactico)
 
 /* Espacio en blanco, saltos de linea, tabulares */
 SKIP :
