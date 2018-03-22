@@ -97,7 +97,6 @@ TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
   < NUMEROENTERO :
     (
       [ "-" ]
-    | [ "+" ]
     )?
     (< DIGIT >)+ >
 }
