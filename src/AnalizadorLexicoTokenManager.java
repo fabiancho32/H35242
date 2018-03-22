@@ -345,11 +345,8 @@ static private int jjMoveNfa_0(int startState, int curPos)
                         kind = 25;
                      { jjCheckNAdd(1); }
                   }
-<<<<<<< HEAD
-=======
                   else if ((0x280000000000L & l) != 0L)
                      { jjCheckNAdd(1); }
->>>>>>> 318de6d1c49acbb0099fccb9aa0a8120652c81e4
                   else if (curChar == 34)
                      { jjCheckNAddStates(0, 5); }
                   else if (curChar == 35)
