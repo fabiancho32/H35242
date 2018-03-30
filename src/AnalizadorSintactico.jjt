@@ -6,6 +6,7 @@ options
   static = true;
 }
 
+
 PARSER_BEGIN(AnalizadorSintactico)
 public class AnalizadorSintactico
 {
@@ -13,11 +14,11 @@ public class AnalizadorSintactico
   {
     try
     {
-      System.out.println("Ingrese el c\u00f3digo a analizar:");
+      System.out.println("Ingrese el código a analizar:");
       AnalizadorSintactico analizador = new AnalizadorSintactico(System.in);
       SimpleNode variable = analizador.Programa();
       variable.dump("");
-      System.out.println("Se ha compilado con \u00e9xito");
+      System.out.println("Se ha compilado con éxito");
     }
     catch (ParseException e)
     {
@@ -41,14 +42,15 @@ SKIP :
 
 TOKEN : /* OPERATORS */
 {
-  < SUMA : "+" >
-| < MULTIPLICACION : "*" >
-| < ASIGNACION : "=" >
+  < ASIGNACION : "=" >
 | < DIFERENTE : "!=" >
-| < RESTA : "-" >
-| < DIVISION : "/" >
 | < MAYORQUE : ">" >
 | < MENORQUE : "<" >
+| < MAYORIGUAL : ">=" >
+| < MENORIGUAL : "<=" >
+| < COMPARAR : "==" >
+| <ADD_OP: "+" | "-">
+| <MULT_OP: "*" | "/">
 }
 
 TOKEN : /*TERMINAL DE LINEA*/
@@ -63,6 +65,7 @@ TOKEN : /*PALABRAS RESERVADAS*/
 | < CONDICIONALSI : "Si" >
 | < CONDICIONALFINSI : "FinSi" >
 | < CONDICIONALDELOCONTRARIO : "Sino" >
+| < CONDICIONALFINDELOCONTRARIO : "FinSino" >
 | < CONDICIONALENTONCES : "Entonces" >
 | < ESCRIBIR : "Escribir" >
 | < LEER : "Leer" >
@@ -86,7 +89,7 @@ TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
 
 TOKEN : /*COMENTARIOS*/
 {
-  < COMENTARIOS : ([ "#" ]) ([ "#" ]) (~[ "#" ])* ([ "#" ]) ([ "#" ]) >
+  < COMENTARIOS : ("##") (~[ "#" ])* ("##") >
 }
 
 TOKEN : /*CADENA DE TEXTO*/
@@ -96,32 +99,7 @@ TOKEN : /*CADENA DE TEXTO*/
 
 TOKEN : /*CONCATENAR*/
 {
-  < CONCATENACION :
-    (
-      (
-        (< CADENADETEXTO >) ([ "@" ]) (< CADENADETEXTO >)(< MAS_CONCATENACION >)*
-      )
-    |
-      (
-        (< IDENTIFICADOR >) ([ "@" ]) (< CADENADETEXTO >)(< MAS_CONCATENACION >)*
-      )
-    |
-      (
-        (< CADENADETEXTO >) ([ "@" ]) (< IDENTIFICADOR >)(< MAS_CONCATENACION >)*
-      )
-    |
-      (
-        (< IDENTIFICADOR >) ([ "@" ]) (< IDENTIFICADOR >)(< MAS_CONCATENACION >)*
-      )
-    ) >
-}
-TOKEN : /*CONCATENAR*/
-{
-  < MAS_CONCATENACION :
-    (
-     (["@"]) <CADENADETEXTO>
-   | (["@"]) <IDENTIFICADOR>
-    ) >
+  < CONCATENACION :"@">
 }
 
 TOKEN : /*Simbolos*/
@@ -141,11 +119,10 @@ SimpleNode Programa() :
 void listadoSentencias() :
 {Token t;}
 {
-  (
     SentenciaSmp() 
-    t =<TERMINALDELINEA>{jjtThis.value = t.image;}#PUNTO(true)
-  [listadoSentencias()]
-)
+    t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
+  [listadoSentencias()]  
+| comentario()[listadoSentencias()]
 }
 
 void SentenciaSmp() :
@@ -157,87 +134,113 @@ void SentenciaSmp() :
 | declaracion()
 }
 
+void comentario() : {  Token t;}
+{
+  <COMENTARIOS>
+}
+
+  
 void condicional() :
 {  Token t;}
 {
   t = < CONDICIONALSI > {jjtThis.value = t.image;}#CONDICIONALSI(true)
-condicion() 
-t = < CONDICIONALENTONCES >{jjtThis.value = t.image;}#CONDICIONALENTONCES(true)
-listadoSentencias()
-[  t = < CONDICIONALDELOCONTRARIO >  {    jjtThis.value = t.image;  }  #CONDICIONALDELOCONTRARIO(true)
-listadoSentencias()
-]
-t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
+  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  condicionales()
+  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t = < CONDICIONALENTONCES >{jjtThis.value = t.image;}#CONDICIONALENTONCES(true)
+  listadoSentencias()
+  t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
+  [ t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
+  t = < CONDICIONALDELOCONTRARIO >{jjtThis.value = t.image;}#CONDICIONALDELOCONTRARIO(true)
+  listadoSentencias()
+  t = < CONDICIONALFINDELOCONTRARIO >{  jjtThis.value = t.image;}#CONDICIONALFINDELOCONTRARIO(true)
+  ]
 }
 
-void condicion() :
+void condicionales() :
 {Token t;}
 {
-  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= < MAYORQUE>{    jjtThis.value = t.image;}#MAYORQUE(true)
-  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= < MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <NUMEROENTERO>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= < MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= <MAYORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= <MAYORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= <MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= <MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-| t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t= <MAYORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
-  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true) 
-
-}
-
-void escribir() :
-{  Token t;}
-{
-  t = < ESCRIBIR >  {jjtThis.value = t.image;}#ESCRIBIR(true)
-  t = < CORCHETEABRE >{  jjtThis.value = t.image;}#CORCHETEABRE(true)
-valor() 
-t = < CORCHETECIERRA >{  jjtThis.value = t.image;}#CORCHETECIERRA(true)
-t = < TERMINALDELINEA >{  jjtThis.value = t.image;}#TERMINALDELINEA(true)
+  t =< MAYORQUE>{jjtThis.value = t.image;}#MAYORQUE(true)
+  |t=< MENORQUE>{jjtThis.value = t.image;}#MENORQUE(true)
+  |t=< MAYORIGUAL>{jjtThis.value = t.image;}#MAYORIGUAL(true)
+  |t=< MENORIGUAL>{jjtThis.value = t.image;}#MENORIGUAL(true)
+  |t=< COMPARAR>{jjtThis.value = t.image;}#COMPARAR(true)
+  |t=< DIFERENTE>{jjtThis.value = t.image;}#DIFERENTE(true)
 }
 
 void asignacion() :
 {  Token t;}
 {
-  t = < IDENTIFICADOR >  {    jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
-t = < ASIGNACION >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
-valor() 
-t = < TERMINALDELINEA >{  jjtThis.value = t.image;}#TERMINALDELINEA(true)
+  t = < IDENTIFICADOR >  {jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
+t = < ASIGNACION >{jjtThis.value = t.image;}#ASIGNACION(true)
+valor()
 }
 
 void valor() :
 {  Token t;}
 {
-  
-  t = < CADENADETEXTO >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
-  [masvalores()]
-| t = < IDENTIFICADOR >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
-  [masvalores()]
-  
+t = < CADENADETEXTO >  {jjtThis.value = t.image;  }  #CADENATEXTO(true)
+| t = <NUMEROENTERO >  {jjtThis.value = t.image;  }  #NUMEROENTERO(true)
+[operadores()] 
+| t = <IDENTIFICADOR >  {jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
+[operadores()]
+| leer() 
 }
 
-void masvalores():
+void operadores():
 {Token t;}
 {
-t = < MAS_CONCATENACION >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
+  t=<ADD_OP> {jjtThis.value = t.image;}#OPERADORADD(true)  
+ valor()
+| t=<MULT_OP>{jjtThis.value = t.image;}#OPERADORMULT(true)  
+  valor()
+}
+
+void leer():
+{Token t;}
+{
+t=<LEER>{jjtThis.value = t.image;}#LEER(true)
+t=<CORCHETEABRE >{jjtThis.value = t.image;}#CORCHETEABRE(true)
+t=<CORCHETECIERRA >{jjtThis.value = t.image;}#CORCHETECIERRA(true) 
+}
+
+void escribir() :
+{Token t;}
+{
+  t = < ESCRIBIR > {jjtThis.value = t.image;}#ESCRIBIR(true)
+  t = < CORCHETEABRE >{  jjtThis.value = t.image;}#CORCHETEABRE(true)
+  datos() 
+  t = < CORCHETECIERRA >{  jjtThis.value = t.image;}#CORCHETECIERRA(true)
+}
+
+void datos():
+{Token t;}
+{
+	t=<CADENADETEXTO>{jjtThis.value = t.image;}#CADENATEXTO(true)
+	[t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+	concatenaciones()
+	]
+|	t=<IDENTIFICADOR>{jjtThis.value = t.image;}#IDENTIFICADOR(true)
+	[t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+	concatenaciones()
+	]
+}
+
+void concatenaciones():
+{Token t;}
+{
+  t=<CADENADETEXTO>{jjtThis.value = t.image;}#CADENATEXTO(true)
+  [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+  concatenaciones()
+  ]
+| t=<IDENTIFICADOR>{jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+  concatenaciones()
+  ]
 }
 
 void declaracion() :
-{  Token t;}
+{ Token t;}
 {
   t = < ENTERO >  {    jjtThis.value = t.image;  }  #ENTERO(true)
   t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
