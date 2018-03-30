@@ -44,6 +44,7 @@ TOKEN : /* OPERATORS */
   < SUMA : "+" >
 | < MULTIPLICACION : "*" >
 | < ASIGNACION : "=" >
+| < DIFERENTE : "!=" >
 | < RESTA : "-" >
 | < DIVISION : "/" >
 | < MAYORQUE : ">" >
@@ -69,7 +70,7 @@ TOKEN : /*PALABRAS RESERVADAS*/
 
 TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
 {
-  < IDENTIFICADOR : [ "a"-"z", "A"-"Z" ] ([ "a"-"z", "A"-"Z", "0"-"9" ])* >
+  < IDENTIFICADOR : ([ "a"-"z", "A"-"Z" ])([ "a"-"z", "A"-"Z", "0"-"9" ])* >
 | < #DIGIT : [ "0"-"9" ] >
 | < #LMINUS : [ "a"-"z" ] >
 }
@@ -98,20 +99,28 @@ TOKEN : /*CONCATENAR*/
   < CONCATENACION :
     (
       (
-        (< CADENADETEXTO >) ([ "@" ]) (< CADENADETEXTO >)
+        (< CADENADETEXTO >) ([ "@" ]) (< CADENADETEXTO >)(< MAS_CONCATENACION >)*
       )
     |
       (
-        (< IDENTIFICADOR >) ([ "@" ]) (< CADENADETEXTO >)
+        (< IDENTIFICADOR >) ([ "@" ]) (< CADENADETEXTO >)(< MAS_CONCATENACION >)*
       )
     |
       (
-        (< CADENADETEXTO >) ([ "@" ]) (< IDENTIFICADOR >)
+        (< CADENADETEXTO >) ([ "@" ]) (< IDENTIFICADOR >)(< MAS_CONCATENACION >)*
       )
     |
       (
-        (< IDENTIFICADOR >) ([ "@" ]) (< IDENTIFICADOR >)
+        (< IDENTIFICADOR >) ([ "@" ]) (< IDENTIFICADOR >)(< MAS_CONCATENACION >)*
       )
+    ) >
+}
+TOKEN : /*CONCATENAR*/
+{
+  < MAS_CONCATENACION :
+    (
+     (["@"]) <CADENADETEXTO>
+   | (["@"]) <IDENTIFICADOR>
     ) >
 }
 
@@ -164,8 +173,31 @@ t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
 void condicion() :
 {Token t;}
 {
-  /*Falta definir en el BNF*/
-  t = < CONDICIONALSI >  {    jjtThis.value = t.image;}#CONDICIONALSI(true)
+  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= < MAYORQUE>{    jjtThis.value = t.image;}#MAYORQUE(true)
+  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= < MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <NUMEROENTERO>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= < MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= <MAYORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= <MAYORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= <MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= <MENORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t = <IDENTIFICADOR >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t= <MAYORQUE>{    jjtThis.value = t.image;}#MENORQUE(true)
+  t = <NUMEROENTERO >  {    jjtThis.value = t.image;}#IDENTIFICADOR(true) 
+
 }
 
 void escribir() :
@@ -190,8 +222,18 @@ t = < TERMINALDELINEA >{  jjtThis.value = t.image;}#TERMINALDELINEA(true)
 void valor() :
 {  Token t;}
 {
-  /*Falta definir en el BNF*/
-  t = < CONDICIONALSI >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
+  
+  t = < CADENADETEXTO >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
+  [masvalores()]
+| t = < IDENTIFICADOR >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
+  [masvalores()]
+  
+}
+
+void masvalores():
+{Token t;}
+{
+t = < MAS_CONCATENACION >  {    jjtThis.value = t.image;  }  #CONDICIONALSI(true)
 }
 
 void declaracion() :
