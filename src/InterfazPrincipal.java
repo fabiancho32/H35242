@@ -178,7 +178,9 @@ public class InterfazPrincipal extends JFrame {
 		        fileChooser.setFileFilter(filtro);
 		        if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
 		            File archivo = fileChooser.getSelectedFile();
-		            if (archivo.getName().endsWith("huq")) {
+		            if (!archivo.getName().endsWith("huq")) {
+		            	archivo = new File(fileChooser.getSelectedFile()+".huq");
+		            }
 		                FileWriter escritor = null;
 		                try {
 		                    escritor = new FileWriter(archivo);
@@ -194,10 +196,7 @@ public class InterfazPrincipal extends JFrame {
 		                        Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 		                    }
 		                }
-		            } else {
-		                JOptionPane.showMessageDialog(null, "El archivo se debe guardar con extension .huq", "Importante", JOptionPane.INFORMATION_MESSAGE);
-
-		            }
+		            
 		        }
 			}
 		});
