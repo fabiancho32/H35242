@@ -1,23 +1,8 @@
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
-
-import javax.swing.JScrollPane;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;	
-import javax.swing.JTextArea;
-import javax.swing.JTree;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -30,8 +15,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 public class InterfazPrincipal extends JFrame {
 
@@ -41,8 +39,8 @@ public class InterfazPrincipal extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	static InterfazPrincipal frame;
-	private JTextArea textArea;
-	private JTextArea textArea_1;
+	private JTextArea textAreaCodigo;
+	private JTextArea txtAreaConsola;
 	private JTree tree;
 	DefaultTreeModel modelo;
 	DefaultMutableTreeNode root;
@@ -70,20 +68,11 @@ public class InterfazPrincipal extends JFrame {
 
 		setTitle("COMPILADOR HUQ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 800, 600);
+		setBounds(100, 100, 802, 599);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-
-		tree = new JTree();
-		tree.setBounds(565, 37, 205, 503);
-		contentPane.add(tree);
-		
-
-		textArea_1 = new JTextArea();
-		textArea_1.setBounds(32, 447, 521, 93);
-		contentPane.add(textArea_1);
 
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBounds(0, 0, 770, 26);
@@ -106,41 +95,37 @@ public class InterfazPrincipal extends JFrame {
 
 		JMenuItem mntmIniciarCompilacion = new JMenuItem("Iniciar Compilacion");
 		mntmIniciarCompilacion.addActionListener(new ActionListener() {
-			
 			public void actionPerformed(ActionEvent e) {
-				if (textArea.getText().trim().isEmpty()) {
+				if (textAreaCodigo.getText().trim().isEmpty()) {
 					JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					InputStream stream = new ByteArrayInputStream(textArea.getText().getBytes(StandardCharsets.UTF_8));
+					InputStream stream = new ByteArrayInputStream(textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
 					AnalizadorSintactico analizador = new AnalizadorSintactico(stream);
 					try {
 						@SuppressWarnings("static-access")
 						SimpleNode variable = analizador.Programa();
 						variable.dump("");
-						 root= new DefaultMutableTreeNode(variable.toString());
-				         modelo = new DefaultTreeModel(root);
-				        tree.setModel(modelo);
-				        modelo.reload();
+						root = new DefaultMutableTreeNode(variable.toString());
+						modelo = new DefaultTreeModel(root);
+						tree.setModel(modelo);
+						modelo.reload();
 						llenarArbol(variable);
+						txtAreaConsola.setText("Se ha compilado con éxito");
 					} catch (ParseException e1) {
-						e1.printStackTrace();
+						txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n"+e1);
+						
 					}
-
 				}
-
 			}
-
-			private void llenarArbol(SimpleNode actual ) {
-
+			private void llenarArbol(SimpleNode actual) {
 				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
 					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
 					DefaultMutableTreeNode actualMutable = new DefaultMutableTreeNode(actual.toString());
 					modelo.insertNodeInto(child, root, j);
 					modelo.reload();
 					llenarArbol((SimpleNode) actual.jjtGetChild(j));
-				}
-
+					}
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
@@ -151,17 +136,30 @@ public class InterfazPrincipal extends JFrame {
 		lblConsola.setBounds(32, 415, 97, 19);
 		contentPane.add(lblConsola);
 
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(26, 39, 527, 363);
-		contentPane.add(scrollPane);
+		JScrollPane scrollPaneCodigo = new JScrollPane();
+		scrollPaneCodigo.setBounds(26, 39, 527, 363);
+		contentPane.add(scrollPaneCodigo);
 
-		textArea = new JTextArea();
-		scrollPane.setViewportView(textArea);
-		TextLineNumber tln = new TextLineNumber(textArea);
+		textAreaCodigo = new JTextArea();
+		scrollPaneCodigo.setViewportView(textAreaCodigo);
+		TextLineNumber tln = new TextLineNumber(textAreaCodigo);
+
+		JScrollPane scrollPaneTree = new JScrollPane();
+		scrollPaneTree.setBounds(565, 37, 205, 503);
+		contentPane.add(scrollPaneTree);
+
+		tree = new JTree();
+		scrollPaneTree.setViewportView(tree);
 		
-		/*Linea que permite contar numero de lineas en el texArea*/
-		//scrollPane.setRowHeaderView(tln);
+		JScrollPane scrollPaneConsola = new JScrollPane();
+		scrollPaneConsola.setBounds(32, 447, 520, 93);
+		contentPane.add(scrollPaneConsola);
+		
+				txtAreaConsola = new JTextArea();
+				scrollPaneConsola.setViewportView(txtAreaConsola);
 
+		/* Linea que permite contar numero de lineas en el texArea */
+		//scrollPaneCodigo.setRowHeaderView(tln);
 
 		///////////////////////////////////////////////////////////////////////// Action
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////////
@@ -191,7 +189,7 @@ public class InterfazPrincipal extends JFrame {
 							}
 
 							// Pone el contenido del fichero en el area de texto
-							textArea.setText(contenidoFichero.toString());
+							textAreaCodigo.setText(contenidoFichero.toString());
 
 						} catch (FileNotFoundException ex) {
 							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
@@ -214,7 +212,7 @@ public class InterfazPrincipal extends JFrame {
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmNuevo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				textArea.setText("");
+				textAreaCodigo.setText("");
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,7 +232,7 @@ public class InterfazPrincipal extends JFrame {
 					FileWriter escritor = null;
 					try {
 						escritor = new FileWriter(archivo);
-						escritor.write(textArea.getText());
+						escritor.write(textAreaCodigo.getText());
 					} catch (FileNotFoundException ex) {
 						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 					} catch (IOException ex) {
@@ -253,12 +251,15 @@ public class InterfazPrincipal extends JFrame {
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	}
+
 	public JTextArea getTextArea() {
-		return textArea;
+		return textAreaCodigo;
 	}
+
 	public JTextArea getTextArea_1() {
-		return textArea_1;
+		return txtAreaConsola;
 	}
+
 	public JTree getTree() {
 		return tree;
 	}
