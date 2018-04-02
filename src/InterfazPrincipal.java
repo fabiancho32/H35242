@@ -30,6 +30,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 
 public class InterfazPrincipal extends JFrame {
 
@@ -110,7 +111,7 @@ public class InterfazPrincipal extends JFrame {
 						modelo = new DefaultTreeModel(root);
 						tree.setModel(modelo);
 						modelo.reload();
-						llenarArbol(variable);
+						llenarArbol(root);
 						txtAreaConsola.setText("Se ha compilado con éxito");
 					} catch (ParseException e1) {
 						txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n"+e1);
@@ -118,14 +119,23 @@ public class InterfazPrincipal extends JFrame {
 					}
 				}
 			}
-			private void llenarArbol(SimpleNode actual) {
-				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
-					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
-					DefaultMutableTreeNode actualMutable = new DefaultMutableTreeNode(actual.toString());
-					modelo.insertNodeInto(child, root, j);
-					modelo.reload();
-					llenarArbol((SimpleNode) actual.jjtGetChild(j));
+			private void llenarArbol(DefaultMutableTreeNode actual) {
+				// condicional si tiene hijos o no
+				if (actual.getChildCount()!=0) { // tiene hijos
+					for (int i = 0; i < actual.getChildCount(); i++) {
+						DefaultMutableTreeNode parent = new DefaultMutableTreeNode(actual.getChildAt(i));
+						actual.insert(parent,i);
+						modelo.reload();
 					}
+					
+				} else {
+					for (int i = 0; i < actual.getChildCount(); i++) {
+						actual.add((MutableTreeNode) actual.getChildAt(i));
+					}
+					llenarArbol(actual.getNextNode());
+				}
+				
+				//llenarArbol( ); recursividad
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
