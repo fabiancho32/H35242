@@ -110,7 +110,9 @@ public class InterfazPrincipal extends JFrame {
 		JTextArea textArea = new JTextArea();
 		scrollPane.setViewportView(textArea);
 		TextLineNumber tln = new TextLineNumber(textArea);
-		// scrollPane.setRowHeaderView(tln);
+		
+		/*Linea que permite contar numero de lineas en el texArea*/
+		//scrollPane.setRowHeaderView(tln);
 
 		
 		
