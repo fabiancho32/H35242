@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
 
+import javax.swing.JScrollPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -10,32 +11,41 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.JScrollPane;	
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
 import java.awt.event.ActionEvent;
-import javax.swing.Action;
 import java.awt.event.ActionListener;
 
 public class InterfazPrincipal extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
+	static InterfazPrincipal frame;
+	private JTextArea textArea;
+	private JTextArea textArea_1;
+	private JTree tree;
+	DefaultTreeModel modelo;
+	DefaultMutableTreeNode root;
 
 	/**
 	 * Launch the application.
@@ -44,7 +54,7 @@ public class InterfazPrincipal extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					InterfazPrincipal frame = new InterfazPrincipal();
+					frame = new InterfazPrincipal();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -66,11 +76,12 @@ public class InterfazPrincipal extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		JTree tree = new JTree();
-		tree.setBounds(565, 50, 205, 490);
+		tree = new JTree();
+		tree.setBounds(565, 37, 205, 503);
 		contentPane.add(tree);
+		
 
-		JTextArea textArea_1 = new JTextArea();
+		textArea_1 = new JTextArea();
 		textArea_1.setBounds(32, 447, 521, 93);
 		contentPane.add(textArea_1);
 
@@ -81,20 +92,57 @@ public class InterfazPrincipal extends JFrame {
 		JMenu mnArchivo = new JMenu("Archivo");
 		menuBar.add(mnArchivo);
 
-		JMenuItem mntmAbrir = new JMenuItem("Abrir");		
+		JMenuItem mntmAbrir = new JMenuItem("Abrir");
 		mnArchivo.add(mntmAbrir);
-		
 
-		JMenuItem mntmNuevo = new JMenuItem("Nuevo");		
+		JMenuItem mntmNuevo = new JMenuItem("Nuevo");
 		mnArchivo.add(mntmNuevo);
 
-		JMenuItem mntmGuardar = new JMenuItem("Guardar");		
+		JMenuItem mntmGuardar = new JMenuItem("Guardar");
 		mnArchivo.add(mntmGuardar);
 
 		JMenu mnCompilar = new JMenu("Compilar");
 		menuBar.add(mnCompilar);
 
 		JMenuItem mntmIniciarCompilacion = new JMenuItem("Iniciar Compilacion");
+		mntmIniciarCompilacion.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				if (textArea.getText().trim().isEmpty()) {
+					JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
+							JOptionPane.INFORMATION_MESSAGE);
+				} else {
+					InputStream stream = new ByteArrayInputStream(textArea.getText().getBytes(StandardCharsets.UTF_8));
+					AnalizadorSintactico analizador = new AnalizadorSintactico(stream);
+					try {
+						@SuppressWarnings("static-access")
+						SimpleNode variable = analizador.Programa();
+						variable.dump("");
+						 root= new DefaultMutableTreeNode(variable.toString());
+				         modelo = new DefaultTreeModel(root);
+				        tree.setModel(modelo);
+				        modelo.reload();
+						llenarArbol(variable);
+					} catch (ParseException e1) {
+						e1.printStackTrace();
+					}
+
+				}
+
+			}
+
+			private void llenarArbol(SimpleNode actual ) {
+
+				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
+					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
+					DefaultMutableTreeNode actualMutable = new DefaultMutableTreeNode(actual.toString());
+					modelo.insertNodeInto(child, root, j);
+					modelo.reload();
+					llenarArbol((SimpleNode) actual.jjtGetChild(j));
+				}
+
+			}
+		});
 		mnCompilar.add(mntmIniciarCompilacion);
 
 		JLabel lblConsola = new JLabel("Consola");
@@ -107,16 +155,16 @@ public class InterfazPrincipal extends JFrame {
 		scrollPane.setBounds(26, 39, 527, 363);
 		contentPane.add(scrollPane);
 
-		JTextArea textArea = new JTextArea();
+		textArea = new JTextArea();
 		scrollPane.setViewportView(textArea);
 		TextLineNumber tln = new TextLineNumber(textArea);
 		
 		/*Linea que permite contar numero de lineas en el texArea*/
 		//scrollPane.setRowHeaderView(tln);
 
-		
-		
-		/////////////////////////////////////////////////////////////////////////Action MENUS/////////////////////////////////////////////////////////////////
+
+		///////////////////////////////////////////////////////////////////////// Action
+		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////////
 		mntmAbrir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
@@ -166,44 +214,52 @@ public class InterfazPrincipal extends JFrame {
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmNuevo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				textArea.setText("");   
+				textArea.setText("");
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmGuardar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
-		        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		        //Creamos el filtro
-		        FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.huq", "huq");
-		        //Le indicamos el filtro
-		        fileChooser.setFileFilter(filtro);
-		        if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
-		            File archivo = fileChooser.getSelectedFile();
-		            if (archivo.getName().endsWith("huq")) {
-		                FileWriter escritor = null;
-		                try {
-		                    escritor = new FileWriter(archivo);
-		                    escritor.write(textArea.getText());
-		                } catch (FileNotFoundException ex) {
-		                    Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-		                } catch (IOException ex) {
-		                    Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-		                } finally {
-		                    try {
-		                        escritor.close();
-		                    } catch (IOException ex) {
-		                        Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-		                    }
-		                }
-		            } else {
-		                JOptionPane.showMessageDialog(null, "El archivo se debe guardar con extension .huq", "Importante", JOptionPane.INFORMATION_MESSAGE);
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				// Creamos el filtro
+				FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.huq", "huq");
+				// Le indicamos el filtro
+				fileChooser.setFileFilter(filtro);
+				if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
+					File archivo = fileChooser.getSelectedFile();
+					if (!archivo.getName().endsWith("huq")) {
+						archivo = new File(fileChooser.getSelectedFile() + ".huq");
+					}
+					FileWriter escritor = null;
+					try {
+						escritor = new FileWriter(archivo);
+						escritor.write(textArea.getText());
+					} catch (FileNotFoundException ex) {
+						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+					} catch (IOException ex) {
+						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+					} finally {
+						try {
+							escritor.close();
+						} catch (IOException ex) {
+							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+						}
+					}
 
-		            }
-		        }
+				}
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
+	}
+	public JTextArea getTextArea() {
+		return textArea;
+	}
+	public JTextArea getTextArea_1() {
+		return textArea_1;
+	}
+	public JTree getTree() {
+		return tree;
 	}
 }
