@@ -45,6 +45,7 @@ public class InterfazPrincipal extends JFrame {
 	private JTree tree;
 	DefaultTreeModel modelo;
 	DefaultMutableTreeNode root;
+	static AnalizadorSintactico  analizador= null;
 
 	/**
 	 * Launch the application.
@@ -102,7 +103,12 @@ public class InterfazPrincipal extends JFrame {
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
 					InputStream stream = new ByteArrayInputStream(textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
-					AnalizadorSintactico analizador = new AnalizadorSintactico(stream);
+					//Funcion reInit()
+					if(analizador==null)
+						analizador = new AnalizadorSintactico(stream);
+					else {
+						analizador.ReInit(stream);
+					}
 					try {
 						@SuppressWarnings("static-access")
 						SimpleNode variable = analizador.Programa();
