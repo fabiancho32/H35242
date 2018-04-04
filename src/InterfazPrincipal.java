@@ -30,6 +30,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class InterfazPrincipal extends JFrame {
 
@@ -46,6 +48,7 @@ public class InterfazPrincipal extends JFrame {
 	DefaultMutableTreeNode root;
 	static AnalizadorSintactico analizador = null;
 	String recuperacion;
+	boolean guardar;
 
 	/**
 	 * Launch the application.
@@ -89,7 +92,16 @@ public class InterfazPrincipal extends JFrame {
 		JMenuItem mntmNuevo = new JMenuItem("Nuevo");
 		mnArchivo.add(mntmNuevo);
 
+		JMenuItem mntmGuardarComo = new JMenuItem("Guardar Como");
+		mnArchivo.add(mntmGuardarComo);
+		
 		JMenuItem mntmGuardar = new JMenuItem("Guardar");
+		mntmGuardar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				guardar=true;
+				//falta el codigo que sobreescriba el archivo que ya esta cargador 
+			}
+		});
 		mnArchivo.add(mntmGuardar);
 
 		JMenu mnCompilar = new JMenu("Compilar");
@@ -98,40 +110,47 @@ public class InterfazPrincipal extends JFrame {
 		JMenuItem mntmIniciarCompilacion = new JMenuItem("Iniciar Compilacion");
 		mntmIniciarCompilacion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (textAreaCodigo.getText().trim().isEmpty()) {
-					JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
-							JOptionPane.INFORMATION_MESSAGE);
-				} else {
-					analizador.setRecuperacion("");
-					InputStream stream = new ByteArrayInputStream(
-							textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
-					// Funcion reInit()
-					if (analizador == null)
-						analizador = new AnalizadorSintactico(stream);					    
-					else {
-						analizador.ReInit(stream);
+				if(guardar) {
+					if (textAreaCodigo.getText().trim().isEmpty()) {
+						JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
+								JOptionPane.INFORMATION_MESSAGE);
+					} else {
 						analizador.setRecuperacion("");
-					}
-					try {
-						@SuppressWarnings("static-access")
-						SimpleNode variable = analizador.Programa();
-						variable.dump("");
-						root = new DefaultMutableTreeNode(variable.toString());
-						modelo = new DefaultTreeModel(root);
-						tree.setModel(modelo);
-						modelo.reload();
-						llenarArbol(variable);
-						recuperacion = analizador.getRecuperacion();
-						if (recuperacion.equals(""))
-							txtAreaConsola.setText("Se ha compilado con éxito");
-						else
-							txtAreaConsola.setText("Se han encontrado los siguientes errores:\n "+recuperacion
-									+ "se ha compilado con éxito");
-					} catch (ParseException e1) {
-						txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
+						InputStream stream = new ByteArrayInputStream(
+								textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
+						// Funcion reInit()
+						if (analizador == null)
+							analizador = new AnalizadorSintactico(stream);					    
+						else {
+							analizador.ReInit(stream);
+							analizador.setRecuperacion("");
+						}
+						try {
+							@SuppressWarnings("static-access")
+							SimpleNode variable = analizador.Programa();
+							variable.dump("");
+							root = new DefaultMutableTreeNode(variable.toString());
+							modelo = new DefaultTreeModel(root);
+							tree.setModel(modelo);
+							modelo.reload();
+							llenarArbol(variable);
+							recuperacion = analizador.getRecuperacion();
+							if (recuperacion.equals(""))
+								txtAreaConsola.setText("Se ha compilado con éxito");
+							else
+								txtAreaConsola.setText("Se han encontrado los siguientes errores:\n "+recuperacion
+										+ "se ha compilado con éxito");
+						} catch (ParseException e1) {
+							txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
 
+						}
 					}
+				}else
+				{
+					JOptionPane.showMessageDialog(frame, "Guarde los ultimos cambios antes de compilar", "Oops...!",
+							JOptionPane.INFORMATION_MESSAGE);
 				}
+				
 			}
 
 			private void llenarArbol(SimpleNode actual) {
@@ -157,6 +176,12 @@ public class InterfazPrincipal extends JFrame {
 		contentPane.add(scrollPaneCodigo);
 
 		textAreaCodigo = new JTextArea();
+		textAreaCodigo.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				guardar=false;
+			}
+		});
 		scrollPaneCodigo.setViewportView(textAreaCodigo);
 		TextLineNumber tln = new TextLineNumber(textAreaCodigo);
 
@@ -181,6 +206,7 @@ public class InterfazPrincipal extends JFrame {
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////
 		mntmAbrir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				guardar=true;
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				// Creamos el filtro
@@ -229,11 +255,13 @@ public class InterfazPrincipal extends JFrame {
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmNuevo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				//poner opcion
 				textAreaCodigo.setText("");
+				guardar=false;
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		mntmGuardar.addActionListener(new ActionListener() {
+		mntmGuardarComo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);

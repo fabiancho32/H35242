@@ -22,7 +22,7 @@ public class AnalizadorSintactico
     {
       t = getNextToken();
     }
-    while (t.kind != kind && t.kind != 16);
+    while (t.kind != kind && (t.kind != 16|t.kind !=35));
   }
   
   public static void main(String args []) throws ParseException
@@ -132,7 +132,7 @@ SimpleNode Programa() :
   }
   catch (ParseException e)
   {
-    error_skipto(TERMINALDELINEA);
+    error_skipto(TERMINALDELINEA|FINARCH);
     return jjtThis;
   }  
 }
@@ -147,7 +147,7 @@ void listadoSentencias() :
 	}
    catch (ParseException e)
    {
-     error_skipto(TERMINALDELINEA);     
+     error_skipto(TERMINALDELINEA|FINARCH);     
    }
 }
 
