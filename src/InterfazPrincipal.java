@@ -165,7 +165,7 @@ public class InterfazPrincipal extends JFrame {
 				scrollPaneConsola.setViewportView(txtAreaConsola);
 
 		/* Linea que permite contar numero de lineas en el texArea */
-		//scrollPaneCodigo.setRowHeaderView(tln);
+		scrollPaneCodigo.setRowHeaderView(tln);
 
 		///////////////////////////////////////////////////////////////////////// Action
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////////
@@ -195,7 +195,8 @@ public class InterfazPrincipal extends JFrame {
 							}
 
 							// Pone el contenido del fichero en el area de texto
-							textAreaCodigo.setText(contenidoFichero.toString());
+							//textAreaCodigo.setText(contenidoFichero.toString());
+							////////////////////////////////////////////////////
 
 						} catch (FileNotFoundException ex) {
 							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);

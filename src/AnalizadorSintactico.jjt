@@ -38,7 +38,7 @@ SKIP :
 | "\n"
 | "\r"
 | "\f"
-| <COMENTARIOS>
+| < COMENTARIOS : ("##") (~[ "#" ])* ("##") >
 }
 
 TOKEN : /* OPERATORS */
@@ -88,10 +88,7 @@ TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
     (< DIGIT >)+ >
 }
 
-TOKEN : /*COMENTARIOS*/
-{
-  < COMENTARIOS : ("##") (~[ "#" ])* ("##") >
-}
+
 
 TOKEN : /*CADENA DE TEXTO*/
 {
@@ -123,7 +120,7 @@ void listadoSentencias() :
     SentenciaSmp() 
     t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
   [listadoSentencias()]  
-| <COMENTARIOS>[listadoSentencias()]
+
 }
 
 void SentenciaSmp() :
