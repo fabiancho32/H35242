@@ -11,6 +11,15 @@ PARSER_BEGIN(AnalizadorSintactico)
 public class AnalizadorSintactico
 {
   static String recuperacion="";
+
+  public static String getRecuperacion() {
+	return recuperacion;
+  }
+
+  public static void setRecuperacion(String recuperacion) {
+	AnalizadorSintactico.recuperacion = recuperacion;
+  }
+  
   public static void error_skipto(int kind)
   {
 	
