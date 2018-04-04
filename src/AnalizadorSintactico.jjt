@@ -10,6 +10,21 @@ options
 PARSER_BEGIN(AnalizadorSintactico)
 public class AnalizadorSintactico
 {
+  static String recuperacion="";
+  public static void error_skipto(int kind)
+  {
+	
+    ParseException e = generateParseException(); // se genera el objeto excepción
+	recuperacion=recuperacion.concat(e.toString()+"\n");
+    System.out.println(e.toString()); // se imprime el mensaje de error
+    Token t;
+    do
+    {
+      t = getNextToken();
+    }
+    while (t.kind != kind && t.kind != 16);
+  }
+  
   public static void main(String args []) throws ParseException
   {
     try
@@ -111,16 +126,29 @@ TOKEN : /*Simbolos*/
 SimpleNode Programa() :
 {}
 {
-  listadoSentencias()<FINARCH>{return jjtThis;}
+  try
+  {
+    listadoSentencias()<FINARCH>{return jjtThis;}
+  }
+  catch (ParseException e)
+  {
+    error_skipto(TERMINALDELINEA);
+    return jjtThis;
+  }  
 }
 
 void listadoSentencias() :
 {Token t;}
 {
-    SentenciaSmp() 
-    t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
-  [listadoSentencias()]  
-
+	try
+	{
+	  SentenciaSmp()     
+  	  [listadoSentencias()]
+	}
+   catch (ParseException e)
+   {
+     error_skipto(TERMINALDELINEA);     
+   }
 }
 
 void SentenciaSmp() :
@@ -132,9 +160,6 @@ void SentenciaSmp() :
 | declaracion()
 }
 
-
-
-  
 void condicional() :
 {  Token t;}
 {
@@ -145,7 +170,7 @@ void condicional() :
   t = < CONDICIONALENTONCES >{jjtThis.value = t.image;}#CONDICIONALENTONCES(true)
   listadoSentencias()
   t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
-  [ t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
+  [
   t = < CONDICIONALDELOCONTRARIO >{jjtThis.value = t.image;}#CONDICIONALDELOCONTRARIO(true)
   listadoSentencias()
   t = < CONDICIONALFINDELOCONTRARIO >{  jjtThis.value = t.image;}#CONDICIONALFINDELOCONTRARIO(true)
@@ -167,18 +192,19 @@ void asignacion() :
 {  Token t;}
 {
   t = < IDENTIFICADOR >  {jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
-t = < ASIGNACION >{jjtThis.value = t.image;}#ASIGNACION(true)
-valor()
+  t = < ASIGNACION >{jjtThis.value = t.image;}#ASIGNACION(true)
+  valor()
+  t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
 }
 
 void valor() :
 {  Token t;}
 {
-t = < CADENADETEXTO >  {jjtThis.value = t.image;  }  #CADENATEXTO(true)
+  t = < CADENADETEXTO >  {jjtThis.value = t.image;  }  #CADENATEXTO(true)
 | t = <NUMEROENTERO >  {jjtThis.value = t.image;  }  #NUMEROENTERO(true)
-[operadores()] 
+  [operadores()] 
 | t = <IDENTIFICADOR >  {jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
-[operadores()]
+  [operadores()]
 | leer() 
 }
 
@@ -186,7 +212,7 @@ void operadores():
 {Token t;}
 {
   t=<ADD_OP> {jjtThis.value = t.image;}#OPERADORADD(true)  
- valor()
+  valor()
 | t=<MULT_OP>{jjtThis.value = t.image;}#OPERADORMULT(true)  
   valor()
 }
@@ -194,9 +220,9 @@ void operadores():
 void leer():
 {Token t;}
 {
-t=<LEER>{jjtThis.value = t.image;}#LEER(true)
-t=<CORCHETEABRE >{jjtThis.value = t.image;}#CORCHETEABRE(true)
-t=<CORCHETECIERRA >{jjtThis.value = t.image;}#CORCHETECIERRA(true) 
+  t=<LEER>{jjtThis.value = t.image;}#LEER(true)
+  t=<CORCHETEABRE >{jjtThis.value = t.image;}#CORCHETEABRE(true)
+  t=<CORCHETECIERRA >{jjtThis.value = t.image;}#CORCHETECIERRA(true) 
 }
 
 void escribir() :
@@ -206,6 +232,7 @@ void escribir() :
   t = < CORCHETEABRE >{  jjtThis.value = t.image;}#CORCHETEABRE(true)
   datos() 
   t = < CORCHETECIERRA >{  jjtThis.value = t.image;}#CORCHETECIERRA(true)
+  t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
 }
 
 void datos():
@@ -239,10 +266,12 @@ void declaracion() :
 {
   t = < ENTERO >  {    jjtThis.value = t.image;  }  #ENTERO(true)
   t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
-[ masIds() ]
+  [ masIds() ]
+  t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
 | t = < STRING >{  jjtThis.value = t.image;}#STRING(true)
-t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
-[ masIds() ]
+  t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  [ masIds() ]
+  t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
 }
 
 void masIds() :
@@ -250,5 +279,5 @@ void masIds() :
 {
   t = < COMA >  {    jjtThis.value = t.image;  }  #COMA(true)
   t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
-[ masIds() ]
+  [ masIds() ]
 }

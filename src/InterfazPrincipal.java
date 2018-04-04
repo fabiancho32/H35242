@@ -44,7 +44,8 @@ public class InterfazPrincipal extends JFrame {
 	private JTree tree;
 	DefaultTreeModel modelo;
 	DefaultMutableTreeNode root;
-	static AnalizadorSintactico  analizador= null;
+	static AnalizadorSintactico analizador = null;
+	String recuperacion;
 
 	/**
 	 * Launch the application.
@@ -101,12 +102,15 @@ public class InterfazPrincipal extends JFrame {
 					JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
-					InputStream stream = new ByteArrayInputStream(textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
-					//Funcion reInit()
-					if(analizador==null)
-						analizador = new AnalizadorSintactico(stream);
+					analizador.setRecuperacion("");
+					InputStream stream = new ByteArrayInputStream(
+							textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
+					// Funcion reInit()
+					if (analizador == null)
+						analizador = new AnalizadorSintactico(stream);					    
 					else {
 						analizador.ReInit(stream);
+						analizador.setRecuperacion("");
 					}
 					try {
 						@SuppressWarnings("static-access")
@@ -117,13 +121,19 @@ public class InterfazPrincipal extends JFrame {
 						tree.setModel(modelo);
 						modelo.reload();
 						llenarArbol(variable);
-						txtAreaConsola.setText("Se ha compilado con éxito");
+						recuperacion = analizador.getRecuperacion();
+						if (recuperacion.equals(""))
+							txtAreaConsola.setText("Se ha compilado con éxito");
+						else
+							txtAreaConsola.setText("Se han encontrado los siguientes errores:\n "+recuperacion
+									+ "se ha compilado con éxito");
 					} catch (ParseException e1) {
-						txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n"+e1);
-						
+						txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
+
 					}
 				}
 			}
+
 			private void llenarArbol(SimpleNode actual) {
 				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
 					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
@@ -131,7 +141,7 @@ public class InterfazPrincipal extends JFrame {
 					modelo.insertNodeInto(child, root, j);
 					modelo.reload();
 					llenarArbol((SimpleNode) actual.jjtGetChild(j));
-					}
+				}
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
@@ -156,19 +166,19 @@ public class InterfazPrincipal extends JFrame {
 
 		tree = new JTree();
 		scrollPaneTree.setViewportView(tree);
-		
+
 		JScrollPane scrollPaneConsola = new JScrollPane();
 		scrollPaneConsola.setBounds(32, 447, 520, 93);
 		contentPane.add(scrollPaneConsola);
-		
-				txtAreaConsola = new JTextArea();
-				scrollPaneConsola.setViewportView(txtAreaConsola);
+
+		txtAreaConsola = new JTextArea();
+		scrollPaneConsola.setViewportView(txtAreaConsola);
 
 		/* Linea que permite contar numero de lineas en el texArea */
-		scrollPaneCodigo.setRowHeaderView(tln);
+		// scrollPaneCodigo.setRowHeaderView(tln);
 
-		///////////////////////////////////////////////////////////////////////// Action
-		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////// Action
+		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////
 		mntmAbrir.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
@@ -195,7 +205,7 @@ public class InterfazPrincipal extends JFrame {
 							}
 
 							// Pone el contenido del fichero en el area de texto
-							//textAreaCodigo.setText(contenidoFichero.toString());
+							// textAreaCodigo.setText(contenidoFichero.toString());
 							////////////////////////////////////////////////////
 
 						} catch (FileNotFoundException ex) {
