@@ -141,7 +141,7 @@ SimpleNode Programa() :
   }
   catch (ParseException e)
   {
-    error_skipto(TERMINALDELINEA|FINARCH);
+    error_skipto(TERMINALDELINEA);
     return jjtThis;
   }  
 }
@@ -156,7 +156,7 @@ void listadoSentencias() :
 	}
    catch (ParseException e)
    {
-     error_skipto(TERMINALDELINEA|FINARCH);     
+     error_skipto(TERMINALDELINEA);     
    }
 }
 
