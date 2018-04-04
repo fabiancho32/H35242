@@ -205,7 +205,7 @@ public class InterfazPrincipal extends JFrame {
 							}
 
 							// Pone el contenido del fichero en el area de texto
-							// textAreaCodigo.setText(contenidoFichero.toString());
+							   textAreaCodigo.setText(contenidoFichero.toString());
 							////////////////////////////////////////////////////
 
 						} catch (FileNotFoundException ex) {
