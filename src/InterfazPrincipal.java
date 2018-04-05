@@ -32,7 +32,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
+import prueba.*;
+import prueba.ParseException;
 public class InterfazPrincipal extends JFrame {
 
 	/**
@@ -143,6 +144,9 @@ public class InterfazPrincipal extends JFrame {
 						} catch (ParseException e1) {
 							txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
 
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
 					}
 				}else
