@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +52,8 @@ public class InterfazPrincipal extends JFrame {
 	static AnalizadorSintactico analizador = null;
 	String recuperacion;
 	boolean guardar;
+	String cadena;
+	File fFichero;
 
 	/**
 	 * Launch the application.
@@ -71,7 +75,7 @@ public class InterfazPrincipal extends JFrame {
 	 * Create the frame.
 	 */
 	public InterfazPrincipal() {
-
+		
 		setTitle("COMPILADOR HUQ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 802, 599);
@@ -100,6 +104,11 @@ public class InterfazPrincipal extends JFrame {
 		mntmGuardar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				guardar=true;
+				if(fFichero!=null){
+					modificar(fFichero,cadena,textAreaCodigo.getText());
+				}else{
+					mntmGuardar.getAction();
+				}
 				//falta el codigo que sobreescriba el archivo que ya esta cargador 
 			}
 		});
@@ -109,7 +118,9 @@ public class InterfazPrincipal extends JFrame {
 		menuBar.add(mnCompilar);
 
 		JMenuItem mntmIniciarCompilacion = new JMenuItem("Iniciar Compilacion");
+		
 		mntmIniciarCompilacion.addActionListener(new ActionListener() {
+			
 			public void actionPerformed(ActionEvent e) {
 				if(guardar) {
 					if (textAreaCodigo.getText().trim().isEmpty()) {
@@ -117,8 +128,10 @@ public class InterfazPrincipal extends JFrame {
 								JOptionPane.INFORMATION_MESSAGE);
 					} else {
 						analizador.setRecuperacion("");
+						
 						InputStream stream = new ByteArrayInputStream(
-								textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
+						textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
+						
 						// Funcion reInit()
 						if (analizador == null)
 							analizador = new AnalizadorSintactico(stream);					    
@@ -209,6 +222,7 @@ public class InterfazPrincipal extends JFrame {
 		//////////////////////////////////////////////////////////////////// Action
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////
 		mntmAbrir.addActionListener(new ActionListener() {
+			
 			public void actionPerformed(ActionEvent e) {
 				guardar=true;
 				JFileChooser fileChooser = new JFileChooser();
@@ -217,10 +231,13 @@ public class InterfazPrincipal extends JFrame {
 				FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.huq", "huq");
 				// Le indicamos el filtro
 				fileChooser.setFileFilter(filtro);
+			
 				if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(null)) {
 					File archivo = fileChooser.getSelectedFile();
+
 					if (archivo.getName().endsWith("huq")) {
 						FileReader lector = null;
+					
 						try {
 							lector = new FileReader(archivo);
 							BufferedReader bfReader = new BufferedReader(lector);
@@ -236,6 +253,9 @@ public class InterfazPrincipal extends JFrame {
 
 							// Pone el contenido del fichero en el area de texto
 							   textAreaCodigo.setText(contenidoFichero.toString());
+							   
+							   fFichero= archivo;
+							   cadena=textAreaCodigo.getText();
 							////////////////////////////////////////////////////
 
 						} catch (FileNotFoundException ex) {
@@ -266,6 +286,7 @@ public class InterfazPrincipal extends JFrame {
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmGuardarComo.addActionListener(new ActionListener() {
+			
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -275,8 +296,11 @@ public class InterfazPrincipal extends JFrame {
 				fileChooser.setFileFilter(filtro);
 				if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
 					File archivo = fileChooser.getSelectedFile();
+					
 					if (!archivo.getName().endsWith("huq")) {
 						archivo = new File(fileChooser.getSelectedFile() + ".huq");
+						fFichero= archivo;
+						cadena= textAreaCodigo.getText();
 					}
 					FileWriter escritor = null;
 					try {
@@ -312,4 +336,116 @@ public class InterfazPrincipal extends JFrame {
 	public JTree getTree() {
 		return tree;
 	}
+	  void Escribir(File fFichero,String cadena)
+	    {
+	        // Declaramos un buffer de escritura
+	        BufferedWriter bw;
+
+	        try
+	        {
+	            // Comprobamos si el archivo no existe y si es asi creamos uno nuevo.
+	         if(!fFichero.exists())
+	         {
+	             fFichero.createNewFile();
+	         }
+
+	           // Luego de haber creado el archivo procedemos a escribir dentro de el.
+	            bw = new BufferedWriter(new FileWriter(fFichero,true));
+	            bw.write(cadena);
+	            bw.close();
+
+	        }catch(Exception e)
+	        {
+	            System.out.println(e);
+	        }
+
+	    }
+	  void modificar(File fAntiguo,String aCadena,String nCadena)
+	    {
+	       /*
+	            Las dos lienas de codigo siguientes, basicamente lo que hacen es generar un numero aleatorio y
+	            asignarselos a una nueva variable "nFnuevo" (Nombre Fichero Nuevo) la cual es igual a la ruta
+	            del directorio padre "fAntiguo" mas  la palabra auxiliar seguido del numero aletorio y la extension
+	            del archivo nuevo
+	       * */
+	        Random numaleatorio = new Random(3816L);
+	        String nFnuevo = fAntiguo.getParent()+"/auxiliar"+String.valueOf(Math.abs(numaleatorio.nextInt()))+".txt";
+
+	     // Creo un nuevo archivo
+	        File fNuevo= new File(nFnuevo);
+	        // Declaro un nuevo buffer de lectura
+	        BufferedReader br;
+	        try
+	        {
+	            /*Valido si el fichero antiguo que pasamos como parametro existe, si es asi procedo a leer el
+	            contenido que hay dentro de el
+	             */
+
+	            if(fAntiguo.exists())
+	            {
+	                br = new BufferedReader(new FileReader(fAntiguo));
+
+	                String linea;
+
+	                /* Mientras el contenido del archivo sea diferente de null procedo a comprar  la linea a modificar con
+	                lo que hay dentro del archivo, si linea es igual a aCadena escribo el contenido de aCadena en mi nuevo
+	                fichero(Auxiliar) de lo contrario escribo el mismo contenido que ya tenia el antiguo fichero en mi fichero auxiliar
+
+	                 */
+	                while((linea=br.readLine()) != null)
+	                {
+	                    if(linea.equals(aCadena))
+	                    {
+	                        Escribir(fNuevo,nCadena);
+
+	                    }
+	                    else
+	                    {
+	                        Escribir(fNuevo,linea);
+	                    }
+	                }
+
+	              // Cierro el buffer de lectura
+	                br.close();
+
+	                // Capturo el nombre del fichero antiguo
+	                String nAntiguo = fAntiguo.getName();
+	                // Borro el fichero antiguo
+	                borrar(fAntiguo);
+	                //Renombro el fichero auxiliar con el nombre del fichero antiguo
+	                fNuevo.renameTo(fAntiguo);
+
+
+
+
+	            }
+	            else
+	            {
+	                System.out.println("Fichero no Existe");
+	            }
+
+	        }catch(Exception e)
+	        {
+	            System.out.println(e);
+	        }
+	    }
+
+
+void borrar (File Ffichero)
+{
+    try
+    {
+       // Comprovamos si el fichero existe  de ser así procedemos a borrar el archivo
+        if(Ffichero.exists())
+        {
+            Ffichero.delete();
+            System.out.println("Ficherro Borrado");
+        }
+
+    }catch(Exception e)
+    {
+        System.out.println(e);
+    }
 }
+}
+
