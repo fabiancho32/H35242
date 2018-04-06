@@ -3,8 +3,9 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,8 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.Random;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,12 +33,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import prueba.*;
 
 public class InterfazPrincipal extends JFrame {
 
@@ -79,7 +73,7 @@ public class InterfazPrincipal extends JFrame {
 	 * Create the frame.
 	 */
 	public InterfazPrincipal() {
-		
+
 		setTitle("COMPILADOR HUQ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 802, 599);
@@ -103,37 +97,36 @@ public class InterfazPrincipal extends JFrame {
 
 		JMenuItem mntmGuardarComo = new JMenuItem("Guardar Como");
 		mnArchivo.add(mntmGuardarComo);
-		
+
 		JMenuItem mntmGuardar = new JMenuItem("Guardar");
-		mntmGuardar.setEnabled(false);
 		mntmGuardar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				guardar=true;
-					borrar(fFichero);
-					File archivo = fFichero;
-					if (!archivo.getName().endsWith("huq")) {
-						archivo = new File(archivo.getAbsolutePath());
-					}
-					FileWriter escritor = null;
+				File archivo = fFichero;
+				if (!archivo.getName().endsWith("huq")) {
+					archivo = new File(archivo.getAbsolutePath());
+					fFichero= archivo;
+					guardar=true;
+				}
+				FileWriter escritor = null;
+				try {
+					escritor = new FileWriter(archivo);
+					escritor.write(textAreaCodigo.getText());
+					fFichero= archivo;
+					guardar=true;
+				} catch (FileNotFoundException ex) {
+					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+				} catch (IOException ex) {
+					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+				} finally {
 					try {
-						escritor = new FileWriter(archivo);
-						escritor.write(textAreaCodigo.getText());
-					} catch (FileNotFoundException ex) {
-						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+						escritor.close();
 					} catch (IOException ex) {
 						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-					} finally {
-						try {
-							escritor.close();
-						} catch (IOException ex) {
-							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-						}
 					}
-
 				}
-			
-		
-			
+
+			}
+
 		});
 		mnArchivo.add(mntmGuardar);
 
@@ -141,84 +134,134 @@ public class InterfazPrincipal extends JFrame {
 		menuBar.add(mnCompilar);
 
 		JMenuItem mntmIniciarCompilacion = new JMenuItem("Iniciar Compilacion");
-		
-		mntmIniciarCompilacion.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				if(guardar) {
-					if (textAreaCodigo.getText().trim().isEmpty()) {
-						JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
-								JOptionPane.INFORMATION_MESSAGE);
-					} else {
-						analizador.setRecuperacion("");
-						
-						InputStream stream = new ByteArrayInputStream(
-						textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
-						
-						// Funcion reInit()
-						if (analizador == null)
-							analizador = new AnalizadorSintactico(stream);					    
-						else {
-							analizador.ReInit(stream);
-							analizador.setRecuperacion("");
-						}
-						try {
-							@SuppressWarnings("static-access")
-							SimpleNode variable = analizador.Programa();
-							variable.dump("");
-							root = new DefaultMutableTreeNode(variable.toString());
-							modelo = new DefaultTreeModel(root);
-							tree.setModel(modelo);
-							modelo.reload();
-							llenarArbol(variable);
-							recuperacion = analizador.getRecuperacion();
-							if (recuperacion.equals(""))
-								txtAreaConsola.setText("Se ha compilado con éxito");
-							else
-								txtAreaConsola.setText("Se han encontrado los siguientes errores:\n "+recuperacion
-										+ "se ha compilado con éxito");
-						} catch (ParseException e1) {
-							txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
 
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-				}else
-				{
-					JOptionPane.showMessageDialog(frame, "Guarde los ultimos cambios antes de compilar", "Oops...!",
+		mntmIniciarCompilacion.addActionListener(new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				// SI NO HAY NADA ENTONCES IMPRIME MENSAJE "NO HAY CODIGO PARA COMPILAR"
+				if (textAreaCodigo.getText().trim().isEmpty()) {
+					JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
 							JOptionPane.INFORMATION_MESSAGE);
+				} else {
+					// SI HAY CODIGO PARA COMPILAR Y NO SE HA GUARDADO, ABRIMOS MODAL PARA GUARDAR.
+					if (fFichero == null && guardar == false) {
+						if(guardarComo()) {
+							compilar();
+							JOptionPane.showMessageDialog(frame, "Listo!", "",
+									JOptionPane.INFORMATION_MESSAGE);
+						}else {
+							txtAreaConsola.setText("No pudimos cargar guardar su código.");
+						}
+
+					} else if (fFichero.exists() && guardar == false) {
+						JOptionPane.showMessageDialog(frame, "De clic en Archivo>Guardar y vuelva a compilar", "Importante!",
+								JOptionPane.INFORMATION_MESSAGE);
+					}else {
+						compilar();
+						JOptionPane.showMessageDialog(frame, "Listo!", "",
+								JOptionPane.INFORMATION_MESSAGE);
+					}
+
 				}
-				
+
+				// JOptionPane.showMessageDialog(frame, "Guarde los ultimos cambios antes de
+				// compilar", "Oops...!", JOptionPane.INFORMATION_MESSAGE);
+
 			}
 
-			private void llenarArbol(Node node) {
-				int i=0;
-				if(node.jjtGetNumChildren() != 0) { // es parent
-					for ( ;i < node.jjtGetNumChildren(); i++) { // recorro todos los hijos y creo un nodo por cada uno
-						if (node.toString().equals(root.toString())) {
-							root.add(new DefaultMutableTreeNode(node.jjtGetChild(i)));
+			private void compilar() {
+				analizador.setRecuperacion("");
+				InputStream stream = new ByteArrayInputStream(
+						textAreaCodigo.getText().getBytes(StandardCharsets.UTF_8));
+
+				// Funcion reInit()
+				if (analizador == null)
+					analizador = new AnalizadorSintactico(stream);
+				else {
+					analizador.ReInit(stream);
+					analizador.setRecuperacion("");
+				}
+				try {
+					@SuppressWarnings("static-access")
+					SimpleNode variable = analizador.Programa();
+					// variable.dump("");
+					root = new DefaultMutableTreeNode(variable.toString());
+					modelo = new DefaultTreeModel(root);
+					tree.setModel(modelo);
+					modelo.reload();
+					llenarArbol(variable, null);
+					recuperacion = analizador.getRecuperacion();
+					if (recuperacion.equals(""))
+						txtAreaConsola.setText("Compilación finalizada.");
+					else
+						txtAreaConsola.setText("Se han encontrado los siguientes errores:\n " + recuperacion
+								+ "Compilación finalizada.");
+				} catch (ParseException e1) {
+					txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
+
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+
+			private ArrayList<Node> hijosArray(Node padre) {
+				ArrayList<Node> hijos = new ArrayList<>();
+
+				for (int i = 0; i < padre.jjtGetNumChildren(); i++) {
+					hijos.add(padre.jjtGetChild(i));
+				}
+				return hijos;
+			}
+
+			private void llenarArbol(Node node, DefaultMutableTreeNode dnode) {
+
+				if (node.toString().equals("Programa")) {
+
+					if (node.jjtGetNumChildren() != 0) {
+						for (Node nodoAux : hijosArray(node)) {
+							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
+							root.add(new DefaultMutableTreeNode(dmnode));
 							modelo.reload();
-						}else {
-							DefaultMutableTreeNode parent = new DefaultMutableTreeNode(node.toString());
-							parent.add(new DefaultMutableTreeNode(node.jjtGetChild(i)));
-							modelo.reload();	
+							llenarArbol(nodoAux, dmnode);
 						}
 					}
-					llenarArbol(node.jjtGetChild(i-1));
-					
-				}else { // es hoja
-					
+
+				} else {
+
+					if (node.jjtGetNumChildren() != 0) {
+						for (Node nodoAux : hijosArray(node)) {
+							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
+							root.add(new DefaultMutableTreeNode(dmnode));
+							modelo.reload();
+							llenarArbol(nodoAux, dmnode);
+						}
+					}
 				}
-					
-//				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
-//					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
-//					DefaultMutableTreeNode actualMutable = new DefaultMutableTreeNode(actual.toString());
-//					modelo.insertNodeInto(child, root, j);
-//					modelo.reload();
-//					llenarArbol((SimpleNode) actual.jjtGetChild(j));
-//				}
+
+				/*
+				 * int i=0; if(node.jjtGetNumChildren() != 0) { // es parent for ( ;i <
+				 * node.jjtGetNumChildren(); i++) { // recorro todos los hijos y creo un nodo
+				 * por cada uno if (node.toString().equals(root.toString())) { root.add(new
+				 * DefaultMutableTreeNode(node.jjtGetChild(i))); modelo.reload(); }else {
+				 * DefaultMutableTreeNode parent = new DefaultMutableTreeNode(node.toString());
+				 * parent.add(new DefaultMutableTreeNode(node.jjtGetChild(i))); modelo.reload();
+				 * } } llenarArbol(node.jjtGetChild(i-1));
+				 * 
+				 * }else { // es hoja
+				 * 
+				 * }
+				 */
+
+				// for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
+				// DefaultMutableTreeNode child = new
+				// DefaultMutableTreeNode(actual.jjtGetChild(j));
+				// DefaultMutableTreeNode actualMutable = new
+				// DefaultMutableTreeNode(actual.toString());
+				// modelo.insertNodeInto(child, root, j);
+				// modelo.reload();
+				// llenarArbol((SimpleNode) actual.jjtGetChild(j));
+				// }
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
@@ -237,7 +280,7 @@ public class InterfazPrincipal extends JFrame {
 		textAreaCodigo.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				guardar=false;
+				guardar = false;
 			}
 		});
 		scrollPaneCodigo.setViewportView(textAreaCodigo);
@@ -248,6 +291,7 @@ public class InterfazPrincipal extends JFrame {
 		contentPane.add(scrollPaneTree);
 
 		tree = new JTree();
+		clearArbol();
 		scrollPaneTree.setViewportView(tree);
 
 		JScrollPane scrollPaneConsola = new JScrollPane();
@@ -263,23 +307,24 @@ public class InterfazPrincipal extends JFrame {
 		//////////////////////////////////////////////////////////////////// Action
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////
 		mntmAbrir.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
-				guardar=true;
+				guardar = true;
 				JFileChooser fileChooser = new JFileChooser();
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				// Creamos el filtro
 				FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.huq", "huq");
 				// Le indicamos el filtro
 				fileChooser.setFileFilter(filtro);
-			
+
 				if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(null)) {
 					File archivo = fileChooser.getSelectedFile();
+					fFichero= archivo;
 					System.out.println(archivo.getAbsolutePath());
 
 					if (archivo.getName().endsWith("huq")) {
 						FileReader lector = null;
-					
+
 						try {
 							lector = new FileReader(archivo);
 							BufferedReader bfReader = new BufferedReader(lector);
@@ -294,9 +339,9 @@ public class InterfazPrincipal extends JFrame {
 							}
 
 							// Pone el contenido del fichero en el area de texto
-							   textAreaCodigo.setText(contenidoFichero.toString());							   
-							   fFichero= new File(archivo.getAbsolutePath());
-							   mntmGuardar.setEnabled(true);
+							textAreaCodigo.setText(contenidoFichero.toString());
+							fFichero = new File(archivo.getAbsolutePath());
+							mntmGuardar.setEnabled(true);
 							////////////////////////////////////////////////////
 
 						} catch (FileNotFoundException ex) {
@@ -320,50 +365,60 @@ public class InterfazPrincipal extends JFrame {
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmNuevo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//poner opcion
+				// poner opcion
 				textAreaCodigo.setText("");
-				guardar=false;
+				guardar = false;
+				txtAreaConsola.setText("");
+				clearArbol();
+				fFichero=null;
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		mntmGuardarComo.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				// Creamos el filtro
-				FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.huq", "huq");
-				// Le indicamos el filtro
-				fileChooser.setFileFilter(filtro);
-				if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
-					File archivo = fileChooser.getSelectedFile();
-					
-					if (!archivo.getName().endsWith("huq")) {
-						archivo = new File(fileChooser.getSelectedFile() + ".huq");
-						fFichero= archivo;
-						mntmGuardar.setEnabled(true);
-					}
-					FileWriter escritor = null;
-					try {
-						escritor = new FileWriter(archivo);
-						escritor.write(textAreaCodigo.getText());
-					} catch (FileNotFoundException ex) {
-						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-					} catch (IOException ex) {
-						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-					} finally {
-						try {
-							escritor.close();
-						} catch (IOException ex) {
-							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-						}
-					}
 
-				}
+			public void actionPerformed(ActionEvent e) {
+				guardarComo();
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	}
+
+	public boolean guardarComo() {
+		boolean guardado=false;
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		// Creamos el filtro
+		FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.huq", "huq");
+		// Le indicamos el filtro
+		fileChooser.setFileFilter(filtro);
+		if (JFileChooser.APPROVE_OPTION == fileChooser.showSaveDialog(null)) {
+			File archivo = fileChooser.getSelectedFile();
+
+			if (!archivo.getName().endsWith("huq")) {
+				archivo = new File(fileChooser.getSelectedFile() + ".huq");
+				fFichero = archivo;
+				guardado =true;
+			}
+			FileWriter escritor = null;
+			try {
+				escritor = new FileWriter(archivo);
+				escritor.write(textAreaCodigo.getText());
+				fFichero = archivo;
+				guardado =true;
+			} catch (FileNotFoundException ex) {
+				Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+			} catch (IOException ex) {
+				Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+			} finally {
+				try {
+					escritor.close();
+				} catch (IOException ex) {
+					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+				}
+			}
+		}
+		return guardado;
 	}
 
 	public JTextArea getTextArea() {
@@ -378,22 +433,10 @@ public class InterfazPrincipal extends JFrame {
 		return tree;
 	}
 
+	public void clearArbol() {
+		DefaultTreeModel model = new DefaultTreeModel(null);
+		tree.setModel(model);
+	}
 
-void borrar (File Ffichero)
-{
-    try
-    {
-       // Comprovamos si el fichero existe  de ser así procedemos a borrar el archivo
-        if(Ffichero.exists())
-        {
-            Ffichero.delete();
-            System.out.println("Ficherro Borrado");
-        }
-
-    }catch(Exception e)
-    {
-        System.out.println(e);
-    }
+	
 }
-}
-
