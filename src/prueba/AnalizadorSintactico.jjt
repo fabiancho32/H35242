@@ -8,6 +8,7 @@ options
 
 
 PARSER_BEGIN(AnalizadorSintactico)
+package prueba;
 public class AnalizadorSintactico
 {
   static String recuperacion="";
