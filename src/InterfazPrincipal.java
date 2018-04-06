@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +31,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -153,14 +157,32 @@ public class InterfazPrincipal extends JFrame {
 				
 			}
 
-			private void llenarArbol(SimpleNode actual) {
-				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
-					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
-					DefaultMutableTreeNode actualMutable = new DefaultMutableTreeNode(actual.toString());
-					modelo.insertNodeInto(child, root, j);
-					modelo.reload();
-					llenarArbol((SimpleNode) actual.jjtGetChild(j));
+			private void llenarArbol(Node node) {
+				int i=0;
+				if(node.jjtGetNumChildren() != 0) { // es parent
+					for ( ;i < node.jjtGetNumChildren(); i++) { // recorro todos los hijos y creo un nodo por cada uno
+						if (node.toString().equals(root.toString())) {
+							root.add(new DefaultMutableTreeNode(node.jjtGetChild(i)));
+							modelo.reload();
+						}else {
+							DefaultMutableTreeNode parent = new DefaultMutableTreeNode(node.toString());
+							parent.add(new DefaultMutableTreeNode(node.jjtGetChild(i)));
+							modelo.reload();	
+						}
+					}
+					llenarArbol(node.jjtGetChild(i-1));
+					
+				}else { // es hoja
+					
 				}
+					
+//				for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
+//					DefaultMutableTreeNode child = new DefaultMutableTreeNode(actual.jjtGetChild(j));
+//					DefaultMutableTreeNode actualMutable = new DefaultMutableTreeNode(actual.toString());
+//					modelo.insertNodeInto(child, root, j);
+//					modelo.reload();
+//					llenarArbol((SimpleNode) actual.jjtGetChild(j));
+//				}
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
