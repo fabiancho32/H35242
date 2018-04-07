@@ -104,15 +104,15 @@ public class InterfazPrincipal extends JFrame {
 				File archivo = fFichero;
 				if (!archivo.getName().endsWith("huq")) {
 					archivo = new File(archivo.getAbsolutePath());
-					fFichero= archivo;
-					guardar=true;
+					fFichero = archivo;
+					guardar = true;
 				}
 				FileWriter escritor = null;
 				try {
 					escritor = new FileWriter(archivo);
 					escritor.write(textAreaCodigo.getText());
-					fFichero= archivo;
-					guardar=true;
+					fFichero = archivo;
+					guardar = true;
 				} catch (FileNotFoundException ex) {
 					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 				} catch (IOException ex) {
@@ -145,21 +145,19 @@ public class InterfazPrincipal extends JFrame {
 				} else {
 					// SI HAY CODIGO PARA COMPILAR Y NO SE HA GUARDADO, ABRIMOS MODAL PARA GUARDAR.
 					if (fFichero == null && guardar == false) {
-						if(guardarComo()) {
+						if (guardarComo()) {
 							compilar();
-							JOptionPane.showMessageDialog(frame, "Listo!", "",
-									JOptionPane.INFORMATION_MESSAGE);
-						}else {
+							JOptionPane.showMessageDialog(frame, "Listo!", "", JOptionPane.INFORMATION_MESSAGE);
+						} else {
 							txtAreaConsola.setText("No pudimos cargar guardar su código.");
 						}
 
 					} else if (fFichero.exists() && guardar == false) {
-						JOptionPane.showMessageDialog(frame, "De clic en Archivo>Guardar y vuelva a compilar", "Importante!",
-								JOptionPane.INFORMATION_MESSAGE);
-					}else {
+						JOptionPane.showMessageDialog(frame, "De clic en Archivo>Guardar y vuelva a compilar",
+								"Importante!", JOptionPane.INFORMATION_MESSAGE);
+					} else {
 						compilar();
-						JOptionPane.showMessageDialog(frame, "Listo!", "",
-								JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(frame, "Listo!", "", JOptionPane.INFORMATION_MESSAGE);
 					}
 
 				}
@@ -184,12 +182,18 @@ public class InterfazPrincipal extends JFrame {
 				try {
 					@SuppressWarnings("static-access")
 					SimpleNode variable = analizador.Programa();
-					// variable.dump("");
+					variable.dump("");
 					root = new DefaultMutableTreeNode(variable.toString());
-					modelo = new DefaultTreeModel(root);
-					tree.setModel(modelo);
-					modelo.reload();
-					llenarArbol(variable, null);
+					llenarArbol(variable, root);
+					
+					JScrollPane scrollPaneTree = new JScrollPane();
+					scrollPaneTree.setBounds(565, 37, 205, 503);
+					contentPane.add(scrollPaneTree);
+					tree = new JTree(root);
+					
+					scrollPaneTree.setViewportView(tree);
+
+
 					recuperacion = analizador.getRecuperacion();
 					if (recuperacion.equals(""))
 						txtAreaConsola.setText("Compilación finalizada.");
@@ -214,54 +218,17 @@ public class InterfazPrincipal extends JFrame {
 				return hijos;
 			}
 
-			private void llenarArbol(Node node, DefaultMutableTreeNode dnode) {
+			private void llenarArbol(Node node, DefaultMutableTreeNode root) {
 
-				if (node.toString().equals("Programa")) {
+				if (node.jjtGetNumChildren() != 0) {
 
-					if (node.jjtGetNumChildren() != 0) {
-						for (Node nodoAux : hijosArray(node)) {
-							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
-							root.add(new DefaultMutableTreeNode(dmnode));
-							modelo.reload();
-							llenarArbol(nodoAux, dmnode);
-						}
-					}
-
-				} else {
-
-					if (node.jjtGetNumChildren() != 0) {
-						for (Node nodoAux : hijosArray(node)) {
-							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
-							root.add(new DefaultMutableTreeNode(dmnode));
-							modelo.reload();
-							llenarArbol(nodoAux, dmnode);
-						}
+					for (Node nodoAux : hijosArray(node)) {
+						DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux.toString());
+						root.add(new DefaultMutableTreeNode(dmnode));
+						dmnode.setParent(root);
+						llenarArbol(nodoAux, dmnode);
 					}
 				}
-
-				/*
-				 * int i=0; if(node.jjtGetNumChildren() != 0) { // es parent for ( ;i <
-				 * node.jjtGetNumChildren(); i++) { // recorro todos los hijos y creo un nodo
-				 * por cada uno if (node.toString().equals(root.toString())) { root.add(new
-				 * DefaultMutableTreeNode(node.jjtGetChild(i))); modelo.reload(); }else {
-				 * DefaultMutableTreeNode parent = new DefaultMutableTreeNode(node.toString());
-				 * parent.add(new DefaultMutableTreeNode(node.jjtGetChild(i))); modelo.reload();
-				 * } } llenarArbol(node.jjtGetChild(i-1));
-				 * 
-				 * }else { // es hoja
-				 * 
-				 * }
-				 */
-
-				// for (int j = 0; j < actual.jjtGetNumChildren(); j++) {
-				// DefaultMutableTreeNode child = new
-				// DefaultMutableTreeNode(actual.jjtGetChild(j));
-				// DefaultMutableTreeNode actualMutable = new
-				// DefaultMutableTreeNode(actual.toString());
-				// modelo.insertNodeInto(child, root, j);
-				// modelo.reload();
-				// llenarArbol((SimpleNode) actual.jjtGetChild(j));
-				// }
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
@@ -285,14 +252,6 @@ public class InterfazPrincipal extends JFrame {
 		});
 		scrollPaneCodigo.setViewportView(textAreaCodigo);
 		TextLineNumber tln = new TextLineNumber(textAreaCodigo);
-
-		JScrollPane scrollPaneTree = new JScrollPane();
-		scrollPaneTree.setBounds(565, 37, 205, 503);
-		contentPane.add(scrollPaneTree);
-
-		tree = new JTree();
-		clearArbol();
-		scrollPaneTree.setViewportView(tree);
 
 		JScrollPane scrollPaneConsola = new JScrollPane();
 		scrollPaneConsola.setBounds(32, 447, 520, 93);
@@ -319,7 +278,7 @@ public class InterfazPrincipal extends JFrame {
 
 				if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(null)) {
 					File archivo = fileChooser.getSelectedFile();
-					fFichero= archivo;
+					fFichero = archivo;
 					System.out.println(archivo.getAbsolutePath());
 
 					if (archivo.getName().endsWith("huq")) {
@@ -370,7 +329,7 @@ public class InterfazPrincipal extends JFrame {
 				guardar = false;
 				txtAreaConsola.setText("");
 				clearArbol();
-				fFichero=null;
+				fFichero = null;
 			}
 		});
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -385,7 +344,7 @@ public class InterfazPrincipal extends JFrame {
 	}
 
 	public boolean guardarComo() {
-		boolean guardado=false;
+		boolean guardado = false;
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		// Creamos el filtro
@@ -398,14 +357,14 @@ public class InterfazPrincipal extends JFrame {
 			if (!archivo.getName().endsWith("huq")) {
 				archivo = new File(fileChooser.getSelectedFile() + ".huq");
 				fFichero = archivo;
-				guardado =true;
+				guardado = true;
 			}
 			FileWriter escritor = null;
 			try {
 				escritor = new FileWriter(archivo);
 				escritor.write(textAreaCodigo.getText());
 				fFichero = archivo;
-				guardado =true;
+				guardado = true;
 			} catch (FileNotFoundException ex) {
 				Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (IOException ex) {
@@ -438,5 +397,4 @@ public class InterfazPrincipal extends JFrame {
 		tree.setModel(model);
 	}
 
-	
 }
