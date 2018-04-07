@@ -101,30 +101,35 @@ public class InterfazPrincipal extends JFrame {
 		JMenuItem mntmGuardar = new JMenuItem("Guardar");
 		mntmGuardar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File archivo = fFichero;
-				if (!archivo.getName().endsWith("huq")) {
-					archivo = new File(archivo.getAbsolutePath());
-					fFichero = archivo;
-					guardar = true;
-				}
-				FileWriter escritor = null;
-				try {
-					escritor = new FileWriter(archivo);
-					escritor.write(textAreaCodigo.getText());
-					fFichero = archivo;
-					guardar = true;
-				} catch (FileNotFoundException ex) {
-					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-				} catch (IOException ex) {
-					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-				} finally {
+				if (fFichero != null) {
+					File archivo = fFichero;
+					if (!archivo.getName().endsWith("huq")) {
+						archivo = new File(archivo.getAbsolutePath());
+						fFichero = archivo;
+						guardar = true;
+					}
+					FileWriter escritor = null;
 					try {
-						escritor.close();
+						escritor = new FileWriter(archivo);
+						escritor.write(textAreaCodigo.getText());
+						fFichero = archivo;
+						guardar = true;
+					} catch (FileNotFoundException ex) {
+						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 					} catch (IOException ex) {
 						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+					} finally {
+						try {
+							escritor.close();
+						} catch (IOException ex) {
+							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+						}
 					}
-				}
 
+				}else {
+					guardarComo();
+				}
+				
 			}
 
 		});
@@ -358,6 +363,7 @@ public class InterfazPrincipal extends JFrame {
 				archivo = new File(fileChooser.getSelectedFile() + ".huq");
 				fFichero = archivo;
 				guardado = true;
+				guardar= true;
 			}
 			FileWriter escritor = null;
 			try {
@@ -365,6 +371,7 @@ public class InterfazPrincipal extends JFrame {
 				escritor.write(textAreaCodigo.getText());
 				fFichero = archivo;
 				guardado = true;
+				guardar= true;
 			} catch (FileNotFoundException ex) {
 				Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (IOException ex) {
@@ -393,8 +400,7 @@ public class InterfazPrincipal extends JFrame {
 	}
 
 	public void clearArbol() {
-		DefaultTreeModel model = new DefaultTreeModel(null);
-		tree.setModel(model);
+		tree.setModel(null);
 	}
 
 }
