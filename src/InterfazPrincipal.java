@@ -76,7 +76,7 @@ public class InterfazPrincipal extends JFrame {
 
 		setTitle("COMPILADOR HUQ");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 802, 599);
+		setBounds(100, 100, 863, 666);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -101,35 +101,30 @@ public class InterfazPrincipal extends JFrame {
 		JMenuItem mntmGuardar = new JMenuItem("Guardar");
 		mntmGuardar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (fFichero != null) {
-					File archivo = fFichero;
-					if (!archivo.getName().endsWith("huq")) {
-						archivo = new File(archivo.getAbsolutePath());
-						fFichero = archivo;
-						guardar = true;
-					}
-					FileWriter escritor = null;
+				File archivo = fFichero;
+				if (!archivo.getName().endsWith("huq")) {
+					archivo = new File(archivo.getAbsolutePath());
+					fFichero = archivo;
+					guardar = true;
+				}
+				FileWriter escritor = null;
+				try {
+					escritor = new FileWriter(archivo);
+					escritor.write(textAreaCodigo.getText());
+					fFichero = archivo;
+					guardar = true;
+				} catch (FileNotFoundException ex) {
+					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+				} catch (IOException ex) {
+					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+				} finally {
 					try {
-						escritor = new FileWriter(archivo);
-						escritor.write(textAreaCodigo.getText());
-						fFichero = archivo;
-						guardar = true;
-					} catch (FileNotFoundException ex) {
-						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+						escritor.close();
 					} catch (IOException ex) {
 						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-					} finally {
-						try {
-							escritor.close();
-						} catch (IOException ex) {
-							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-						}
 					}
-
-				}else {
-					guardarComo();
 				}
-				
+
 			}
 
 		});
@@ -145,7 +140,7 @@ public class InterfazPrincipal extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				// SI NO HAY NADA ENTONCES IMPRIME MENSAJE "NO HAY CODIGO PARA COMPILAR"
 				if (textAreaCodigo.getText().trim().isEmpty()) {
-					JOptionPane.showMessageDialog(frame, "No hay código para compilar", "Oops...!",
+					JOptionPane.showMessageDialog(frame, "No hay cï¿½digo para compilar", "Oops...!",
 							JOptionPane.INFORMATION_MESSAGE);
 				} else {
 					// SI HAY CODIGO PARA COMPILAR Y NO SE HA GUARDADO, ABRIMOS MODAL PARA GUARDAR.
@@ -154,7 +149,7 @@ public class InterfazPrincipal extends JFrame {
 							compilar();
 							JOptionPane.showMessageDialog(frame, "Listo!", "", JOptionPane.INFORMATION_MESSAGE);
 						} else {
-							txtAreaConsola.setText("No pudimos cargar guardar su código.");
+							txtAreaConsola.setText("No pudimos cargar guardar su cï¿½digo.");
 						}
 
 					} else if (fFichero.exists() && guardar == false) {
@@ -166,9 +161,6 @@ public class InterfazPrincipal extends JFrame {
 					}
 
 				}
-
-				// JOptionPane.showMessageDialog(frame, "Guarde los ultimos cambios antes de
-				// compilar", "Oops...!", JOptionPane.INFORMATION_MESSAGE);
 
 			}
 
@@ -189,22 +181,16 @@ public class InterfazPrincipal extends JFrame {
 					SimpleNode variable = analizador.Programa();
 					variable.dump("");
 					root = new DefaultMutableTreeNode(variable.toString());
-					llenarArbol(variable, root);
-					
-					JScrollPane scrollPaneTree = new JScrollPane();
-					scrollPaneTree.setBounds(565, 37, 205, 503);
-					contentPane.add(scrollPaneTree);
-					tree = new JTree(root);
-					
-					scrollPaneTree.setViewportView(tree);
-
-
+					modelo = new DefaultTreeModel(root);
+					tree.setModel(modelo);
+					modelo.reload();
+					llenarArbol(variable, null);
 					recuperacion = analizador.getRecuperacion();
 					if (recuperacion.equals(""))
-						txtAreaConsola.setText("Compilación finalizada.");
+						txtAreaConsola.setText("CompilaciÃ³n finalizada.");
 					else
 						txtAreaConsola.setText("Se han encontrado los siguientes errores:\n " + recuperacion
-								+ "Compilación finalizada.");
+								+ "CompilaciÃ³n finalizada.");
 				} catch (ParseException e1) {
 					txtAreaConsola.setText("Se han encontrado errores.\n\\n\\n" + e1);
 
@@ -223,17 +209,31 @@ public class InterfazPrincipal extends JFrame {
 				return hijos;
 			}
 
-			private void llenarArbol(Node node, DefaultMutableTreeNode root) {
+			private void llenarArbol(Node node, DefaultMutableTreeNode dnode) {
 
-				if (node.jjtGetNumChildren() != 0) {
+				if (node == modelo.getRoot()) {
 
-					for (Node nodoAux : hijosArray(node)) {
-						DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux.toString());
-						root.add(new DefaultMutableTreeNode(dmnode));
-						dmnode.setParent(root);
-						llenarArbol(nodoAux, dmnode);
+					if (node.jjtGetNumChildren() != 0) {
+						for (Node nodoAux : hijosArray(node)) {
+							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
+							root.add(new DefaultMutableTreeNode(dmnode));
+							modelo.reload();
+							llenarArbol(nodoAux, dmnode);
+						}
+					}
+
+				} else {
+
+					if (node.jjtGetNumChildren() != 0) {
+						for (Node nodoAux : hijosArray(node)) {
+							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
+							root.add(new DefaultMutableTreeNode(dmnode));
+							modelo.reload();
+							llenarArbol(nodoAux, dmnode);
+						}
 					}
 				}
+
 			}
 		});
 		mnCompilar.add(mntmIniciarCompilacion);
@@ -258,15 +258,23 @@ public class InterfazPrincipal extends JFrame {
 		scrollPaneCodigo.setViewportView(textAreaCodigo);
 		TextLineNumber tln = new TextLineNumber(textAreaCodigo);
 
+		JScrollPane scrollPaneTree = new JScrollPane();
+		scrollPaneTree.setBounds(565, 37, 205, 569);
+		contentPane.add(scrollPaneTree);
+
+		tree = new JTree();
+		clearArbol();
+		scrollPaneTree.setViewportView(tree);
+
 		JScrollPane scrollPaneConsola = new JScrollPane();
-		scrollPaneConsola.setBounds(32, 447, 520, 93);
+		scrollPaneConsola.setBounds(32, 447, 521, 159);
 		contentPane.add(scrollPaneConsola);
 
 		txtAreaConsola = new JTextArea();
 		scrollPaneConsola.setViewportView(txtAreaConsola);
 
 		/* Linea que permite contar numero de lineas en el texArea */
-		// scrollPaneCodigo.setRowHeaderView(tln);
+		//scrollPaneCodigo.setRowHeaderView(tln);
 
 		//////////////////////////////////////////////////////////////////// Action
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////
@@ -363,7 +371,7 @@ public class InterfazPrincipal extends JFrame {
 				archivo = new File(fileChooser.getSelectedFile() + ".huq");
 				fFichero = archivo;
 				guardado = true;
-				guardar= true;
+				guardar=true;
 			}
 			FileWriter escritor = null;
 			try {
@@ -371,7 +379,7 @@ public class InterfazPrincipal extends JFrame {
 				escritor.write(textAreaCodigo.getText());
 				fFichero = archivo;
 				guardado = true;
-				guardar= true;
+				guardar=true;
 			} catch (FileNotFoundException ex) {
 				Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (IOException ex) {
@@ -400,7 +408,8 @@ public class InterfazPrincipal extends JFrame {
 	}
 
 	public void clearArbol() {
-		tree.setModel(null);
+		DefaultTreeModel model = new DefaultTreeModel(null);
+		tree.setModel(model);
 	}
 
 }

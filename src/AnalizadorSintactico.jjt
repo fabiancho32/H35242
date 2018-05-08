@@ -8,9 +8,24 @@ options
 
 
 PARSER_BEGIN(AnalizadorSintactico)
+import java.util.ArrayList;
 public class AnalizadorSintactico
 {
   static String recuperacion="";
+   public static ArrayList<contenedor> contenedores= new ArrayList<contenedor>();
+   static String tipo="";
+   public static contenedor c;
+
+ static  Token operador;
+ static Token D1;
+ static Token D2;
+static int cambio=0;
+  public static ArrayList<Token> acumular= new ArrayList<Token>();
+static Boolean activo=false;
+ static Boolean activoif=false;
+ static Token asignar;
+static Token asignar_id; 
+
 
   public static String getRecuperacion() {
 	return recuperacion;
@@ -19,6 +34,7 @@ public class AnalizadorSintactico
   public static void setRecuperacion(String recuperacion) {
 	AnalizadorSintactico.recuperacion = recuperacion;
   }
+
   
   public static void error_skipto(int kind)
   {
@@ -41,7 +57,15 @@ public class AnalizadorSintactico
       System.out.println("Ingrese el código a analizar:");
       AnalizadorSintactico analizador = new AnalizadorSintactico(System.in);
       SimpleNode variable = analizador.Programa();
-      variable.dump("");
+      //variable.dump("");
+    System.out.println(recuperacion);
+ 
+      for (int i = 0; i < contenedores.size(); i++) {
+		System.out.println(contenedores.get(i).getNombre());    	  
+	}
+
+	
+
       System.out.println("Se ha compilado con éxito");
     }
     catch (ParseException e)
@@ -49,8 +73,285 @@ public class AnalizadorSintactico
       System.err.println("Se han encontrado errores");
       System.err.println(e.getMessage());
     }
-  }
+  }//
+
+
+//busca si ya esta el token
+static public boolean verificarRepetido(Token token)
+{
+boolean encontro=false;
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(token.image))
+{
+  encontro=true;
 }
+  
+}
+
+if(encontro==true)
+{
+recuperacion+="Error Semantico:  ya se encuentra declarada la variable: "+token.image+" En la Linea "+token.beginLine+",en la columna "+token.beginColumn+ "\n";
+return false;
+}
+else
+return true; 
+}//
+
+//verifica que este declarado
+static public void verificardeclarado(Token token) {
+
+boolean encontro=false;
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(token.image))
+{
+  encontro=true;
+}
+  
+}
+
+if(encontro!=true)
+{
+recuperacion+="Error Semantico:  no se encuentra declarada la variable: "+token.image+" En la Linea "+token.beginLine+",en la columna "+token.beginColumn+ "\n";
+}
+/*
+else {
+
+  if(!buscarTipo(token).equals("Cadena")) 
+recuperacion+="Error Semantico:  no es tipo cadena encuentra declarada la variable: "+token.image+" En la Linea "+token.beginLine+",en la columna "+token.beginColumn+ "\n";
+
+  }
+*/
+
+
+
+
+}//
+
+//asigna el valor concuerda con el tipo
+static void verificar_asignacion(Token a,Token b)
+{
+  
+String dato1=" ",dato2="";
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(a.image))
+{
+  dato1=buscar(a.image);
+}
+
+if(contenedores.get(i).getNombre().equals(b.image))
+{
+  dato2=buscar(b.image);
+}
+
+}
+
+if(!dato1.equals(dato2)) {
+recuperacion+="Error Semantico: no se  le puede asignar a esta variable: "+a.image+" no son del mismo tipo: "+" En la Linea "+a.beginLine+", en la columna "+a.beginColumn+ "\n";
+recuperacion+="Error Semantico: no se puede asignar: "+b.image+" En la Linea "+b.beginLine+" ,en la columna "+b.beginColumn+ "\n";
+}
+else {
+
+asignar(a.image);
+  }
+
+
+
+  
+  
+}//
+
+
+//devuelve tipo
+static String buscar(String identificador)
+{
+  String dato=" "; 
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(identificador))
+{
+
+dato=contenedores.get(i).getTipo();
+ 
+} 
+}
+return dato;
+  
+}//
+
+
+
+//verifica que el token se encuentre
+static void inicializada(Token t) {
+boolean encontro=false;
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(token.image))
+{
+  encontro=true;
+}
+  
+}
+
+if(encontro==false)
+{
+
+int intIndex = recuperacion.indexOf("Error Semantico:  no se encuentra declarada la variable: "+token.image+" En la Linea "+token.beginLine+",en la columna "+token.beginColumn+ "\n");
+
+if(intIndex==-1){  
+  
+recuperacion+="Error Semantico:  no se encuentra declarada la variable: "+token.image+" En la Linea "+token.beginLine+",en la columna "+token.beginColumn+ "\n";
+}
+
+}
+
+/*
+if(encontro==true) {
+if(!buscar(t.image).equals("Cadena")) {
+recuperacion+="Error Semantico: la variable debe de ser tipo cadena : "+t.image+" En la Linea "+t.beginLine+"en la columna "+t.beginColumn+ "\n";
+
+  }
+  
+
+  }
+*/
+
+
+}//cierra funcion
+
+
+
+//validar if
+static void validar(Token a, Token b ,Token operador) {
+String dato1=" ";
+String dato2=" ";
+
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(a.image))
+{
+  dato1=buscar(a.image);
+}
+
+if(contenedores.get(i).getNombre().equals(b.image))
+{
+  dato2=buscar(b.image);
+}
+
+}
+if(a.image!=null&&b.image!=null)
+{
+  
+
+if(!dato1.equals(dato2)) {
+recuperacion+="Error Semantico:  no son del mismo tipo las variables: "+a.image+" , "+b.image  + " En la Linea "+a.beginLine+",en la columna "+a.beginColumn+ "\n";
+}
+
+if("<=".equals(operador.image)||">=".equals(operador.image)||"<".equals(operador.image)||">".equals(operador.image) )
+{
+if(!dato1.equals("Numero"))
+recuperacion+="Error Semantico:  no se puede operar una cadena con este operador "+operador.image +" \t " +a.image+" En la Linea "+a.beginLine+",en la columna "+a.beginColumn+"\n";
+
+if(!dato2.equals("Numero"))
+recuperacion+="Error Semantico:  no se puede operar una cadena con este operador "+operador.image +" \t "+b.image+" En la Linea "+b.beginLine+",en la columna "+b.beginColumn+ "\n";
+}
+
+}
+
+
+
+}//cierra funcion
+
+
+
+static void analizarAsignacion(Token a) {
+ String tipo=buscar(a.image);
+Boolean entrociclo=false;
+   for(int i=1;i<acumular.size();i++)
+   {
+      if(!acumular.get(i).image.equals("+")&&!acumular.get(i).image.equals("-")&&!acumular.get(i).image.equals("*")&&!acumular.get(i).image.equals("/")&&!acumular.get(i).image.equals("]") ) {
+             String tipo2=buscar(acumular.get(i).image);
+
+             if(!tipo.equals(tipo2)&&validarDeclarado(acumular.get(i))==true) { 
+   			recuperacion+="Error Semantico: no se puede asignar esta variable "+acumular.get(i).image+" En la Linea "+acumular.get(i).beginLine+" en la columna "+acumular.get(i).beginColumn+" no es del mismo tipo: "+tipo2+" con la variaable:\t "+a.image+"de tipo: " +tipo+ "\n";
+   			entrociclo=true;
+   			}else
+   			verificarAsignacion(acumular.get(i));		 
+      }
+    }
+
+if(!entrociclo) {
+asignar(a.image);
+}
+
+     }//
+
+
+//se encarga de analizar si el token tiene una asignacion 
+static void verificarAsignacion(Token a) {
+
+
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(a.image))
+{
+  if(contenedores.get(i).getAsignacion()==false)
+recuperacion+="Error Semantico: no se  encuentra inicializada la variable "+a.image+" En la Linea "+a.beginLine+" en la columna "+a.beginColumn+ "\n";  
+}
+}
+
+
+
+}//
+
+
+//si el dato esta bien se asigna el valor
+static void asignar(String a) {
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(a))
+{
+  contenedores.get(i).setAsignacion(true);
+}
+}
+
+
+
+}//
+
+
+static public boolean validarDeclarado(Token token)
+{
+boolean val=false;
+
+
+for(int i=0;i<contenedores.size();i++)
+{
+if(contenedores.get(i).getNombre().equals(token.image))
+{
+return true;
+ 
+}
+  
+}
+return false;
+  
+  
+}//
+
+
+
+}//class
 
 PARSER_END(AnalizadorSintactico)
 
@@ -170,59 +471,113 @@ void SentenciaSmp() :
 }
 
 void condicional() :
-{  Token t;}
+{  Token t; D1=new Token();D2=new Token();operador= new Token();cambio=0;activoif=true; }
 {
   t = < CONDICIONALSI > {jjtThis.value = t.image;}#CONDICIONALSI(true)
-  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  dat()
   condicionales()
-  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;}#IDENTIFICADOR(true)
-  t = < CONDICIONALENTONCES >{jjtThis.value = t.image;}#CONDICIONALENTONCES(true)
+  dat()
+  t = < CONDICIONALENTONCES >{validar(D1,D2,operador);jjtThis.value = t.image;activoif=false; }#CONDICIONALENTONCES(true)
   listadoSentencias()
-  t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
   [
   t = < CONDICIONALDELOCONTRARIO >{jjtThis.value = t.image;}#CONDICIONALDELOCONTRARIO(true)
   listadoSentencias()
-  t = < CONDICIONALFINDELOCONTRARIO >{  jjtThis.value = t.image;}#CONDICIONALFINDELOCONTRARIO(true)
   ]
+  t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
+  
 }
+
+
+void dat():{Token t;}
+{
+
+  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;
+
+        if(D1!=null) {
+          cambio++;
+
+		  if(D1.image==null&&cambio==1) 
+			D1=t;
+       
+         if(D2.image==null&&cambio==2)
+          D2=t;
+
+      }
+      //if(!activo)
+		inicializada(t);
+	
+	if(activoif){
+	  System.out.println("entro"+t.image); 
+	verificarAsignacion(t);
+    }
+
+		  }#IDENTIFICADOR(true)
+| t=< NUMEROENTERO >{    jjtThis.value = t.image;}#NUMEROENTERO(true)
+
+
+}
+
 
 void condicionales() :
 {Token t;}
 {
-  t =< MAYORQUE>{jjtThis.value = t.image;}#MAYORQUE(true)
-  |t=< MENORQUE>{jjtThis.value = t.image;}#MENORQUE(true)
-  |t=< MAYORIGUAL>{jjtThis.value = t.image;}#MAYORIGUAL(true)
-  |t=< MENORIGUAL>{jjtThis.value = t.image;}#MENORIGUAL(true)
-  |t=< COMPARAR>{jjtThis.value = t.image;}#COMPARAR(true)
-  |t=< DIFERENTE>{jjtThis.value = t.image;}#DIFERENTE(true)
+  t =< MAYORQUE>{jjtThis.value = t.image;operador=t;}#MAYORQUE(true)
+  |t=< MENORQUE>{jjtThis.value = t.image;operador=t;}#MENORQUE(true)
+  |t=< MAYORIGUAL>{jjtThis.value = t.image;operador=t;}#MAYORIGUAL(true)
+  |t=< MENORIGUAL>{jjtThis.value = t.image;operador=t;}#MENORIGUAL(true)
+  |t=< COMPARAR>{jjtThis.value = t.image;operador=t;}#COMPARAR(true)
+  |t=< DIFERENTE>{jjtThis.value = t.image;operador=t;}#DIFERENTE(true)
 }
 
 void asignacion() :
-{  Token t;}
+{  Token t;asignar=new Token(); asignar_id=new Token(); activo=true;  }
 {
-  t = < IDENTIFICADOR >  {jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
+  t = < IDENTIFICADOR >  {jjtThis.value = t.image; asignar=t; }  #IDENTIFICADOR(true)
   t = < ASIGNACION >{jjtThis.value = t.image;}#ASIGNACION(true)
   valor()
-  t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
+  t =<TERMINALDELINEA>{jjtThis.value = t.image;
+  if(acumular.size()==0&&asignar_id.image!=null){
+    verificar_asignacion(asignar,asignar_id);
+  }
+  analizarAsignacion(asignar);
+  acumular.clear();activo=false;
+
+
+  }#TERMINAL(true)
 }
 
 void valor() :
 {  Token t;}
 {
-  t = < CADENADETEXTO >  {jjtThis.value = t.image;  }  #CADENATEXTO(true)
-| t = <NUMEROENTERO >  {jjtThis.value = t.image;  }  #NUMEROENTERO(true)
+  t = < CADENADETEXTO >  {jjtThis.value = t.image;
+  if(activo)
+  {if(buscar(asignar.image).equals("Cadena")&&acumular.size()==0)
+  { asignar(asignar.image);
+  }else
+  {
+     if(!buscar(asignar.image).equals("Cadena"))  
+    recuperacion+="Error Semantico: no se puede asignar una cadena a una variable tipo Cadena:"+t.image+" En la Linea "+t.beginLine+" en la columna "+t.beginColumn+ "\n"; }
+   } }  #CADENATEXTO(true)
+  [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+	concatenaciones()
+	]
+| t = <NUMEROENTERO >  {jjtThis.value = t.image;acumular.add(t); if(activo){if(buscar(asignar.image).equals("Numero")&&acumular.size()==0)asignar(asignar.image); } }  #NUMEROENTERO(true)
   [operadores()] 
-| t = <IDENTIFICADOR >  {jjtThis.value = t.image;  }  #IDENTIFICADOR(true)
+| t = <IDENTIFICADOR >  {jjtThis.value = t.image;verificardeclarado(t); acumular.add(t);
+      if(!activo)
+		inicializada(t); }  #IDENTIFICADOR(true)
   [operadores()]
-| leer() 
+| leer()
+|t= <CORCHETEABRE>{jjtThis.value = t.image;acumular.add(t); }#CORCHETEABRE(true)valor()<CORCHETECIERRA>{jjtThis.value = t.image;acumular.add(t); }#CORCHETECIERRA(true) [operadores()]
+
 }
 
 void operadores():
 {Token t;}
 {
-  t=<ADD_OP> {jjtThis.value = t.image;}#OPERADORADD(true)  
+  t=<ADD_OP> {jjtThis.value = t.image;acumular.add(t);}#OPERADORADD(true)  
   valor()
-| t=<MULT_OP>{jjtThis.value = t.image;}#OPERADORMULT(true)  
+| t=<MULT_OP>{jjtThis.value = t.image;acumular.add(t);}#OPERADORMULT(true)  
   valor()
 }
 
@@ -231,7 +586,7 @@ void leer():
 {
   t=<LEER>{jjtThis.value = t.image;}#LEER(true)
   t=<CORCHETEABRE >{jjtThis.value = t.image;}#CORCHETEABRE(true)
-  t=<CORCHETECIERRA >{jjtThis.value = t.image;}#CORCHETECIERRA(true) 
+  t=<CORCHETECIERRA >{jjtThis.value = t.image;asignar(asignar.image);}#CORCHETECIERRA(true) 
 }
 
 void escribir() :
@@ -251,7 +606,16 @@ void datos():
 	[t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
 	concatenaciones()
 	]
-|	t=<IDENTIFICADOR>{jjtThis.value = t.image;}#IDENTIFICADOR(true)
+|	t=<IDENTIFICADOR>{jjtThis.value = t.image;verificardeclarado(t);acumular.add(t);
+       if(!activo)
+		inicializada(t);
+
+    inicializada(t);
+	verificarAsignacion(t);
+    
+
+
+		 }#IDENTIFICADOR(true)
 	[t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
 	concatenaciones()
 	]
@@ -260,33 +624,52 @@ void datos():
 void concatenaciones():
 {Token t;}
 {
-  t=<CADENADETEXTO>{jjtThis.value = t.image;}#CADENATEXTO(true)
+  t=<CADENADETEXTO>{jjtThis.value = t.image;if(activo){
+    if(buscar(asignar.image).equals("Cadena")&&acumular.size()==0){
+    asignar(asignar.image);
+  }else{
+    if(!buscar(asignar.image).equals("Cadena"))
+    recuperacion+="Error Semantico: no se puede asignar una cadena a una variable tipo Numero:"+t.image+" En la Linea "+t.beginLine+" en la columna "+t.beginColumn+ "\n";
+  }
+
+  }
+   }#CADENATEXTO(true)
   [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
   concatenaciones()
   ]
-| t=<IDENTIFICADOR>{jjtThis.value = t.image;}#IDENTIFICADOR(true)
+| t=<IDENTIFICADOR>{jjtThis.value = t.image;verificardeclarado(t);acumular.add(t);
+       if(!activo)
+		inicializada(t);
+
+          inicializada(t);
+	verificarAsignacion(t);
+            
+
+		}#IDENTIFICADOR(true)
   [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
   concatenaciones()
   ]
 }
 
 void declaracion() :
-{ Token t;}
+{ Token t; c= new contenedor();}
 {
-  t = < ENTERO >  {    jjtThis.value = t.image;  }  #ENTERO(true)
-  t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t = < ENTERO >  {    jjtThis.value = t.image; tipo=t.image;  }  #ENTERO(true)
+  t = < IDENTIFICADOR >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c);
+      }}#IDENTIFICADOR(true)
   [ masIds() ]
-  t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
-| t = < STRING >{  jjtThis.value = t.image;}#STRING(true)
-  t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t =<TERMINALDELINEA>{jjtThis.value = t.image; }#TERMINAL(true)
+| t = < STRING >{  jjtThis.value = t.image;tipo=t.image;}#STRING(true)
+  t = < IDENTIFICADOR >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c);
+         } }#IDENTIFICADOR(true)
   [ masIds() ]
   t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
 }
 
 void masIds() :
-{  Token t;}
+{  Token t; c=new contenedor();}
 {
   t = < COMA >  {    jjtThis.value = t.image;  }  #COMA(true)
-  t = < IDENTIFICADOR >{  jjtThis.value = t.image;}#IDENTIFICADOR(true)
+  t = < IDENTIFICADOR >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c); }                 }#IDENTIFICADOR(true)
   [ masIds() ]
 }
