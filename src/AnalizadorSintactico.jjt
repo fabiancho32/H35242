@@ -38,7 +38,6 @@ static Token asignar_id;
   
   public static void error_skipto(int kind)
   {
-	
     ParseException e = generateParseException(); // se genera el objeto excepción
 	recuperacion=recuperacion.concat(e.toString()+"\n");
     System.out.println(e.toString()); // se imprime el mensaje de error
@@ -47,7 +46,7 @@ static Token asignar_id;
     {
       t = getNextToken();
     }
-    while (t.kind != kind && t.kind==FINARCH);
+    while (t.kind != kind && t.kind==EOF);
   }
   
   public static void main(String args []) throws ParseException
@@ -430,7 +429,6 @@ TOKEN : /*Simbolos*/
   < CORCHETEABRE : "[" >
 | < CORCHETECIERRA : "]" >
 | < COMA : "," >
-| < FINARCH : "?" >
 }
 
 SimpleNode Programa() :
@@ -438,7 +436,7 @@ SimpleNode Programa() :
 {
   try
   {
-    listadoSentencias()<FINARCH>{return jjtThis;}
+    listadoSentencias()<EOF>{return jjtThis;}
   }
   catch (ParseException e)
   {

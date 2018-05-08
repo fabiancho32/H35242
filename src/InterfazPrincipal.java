@@ -101,29 +101,34 @@ public class InterfazPrincipal extends JFrame {
 		JMenuItem mntmGuardar = new JMenuItem("Guardar");
 		mntmGuardar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File archivo = fFichero;
-				if (!archivo.getName().endsWith("huq")) {
-					archivo = new File(archivo.getAbsolutePath());
-					fFichero = archivo;
-					guardar = true;
-				}
-				FileWriter escritor = null;
 				try {
-					escritor = new FileWriter(archivo);
-					escritor.write(textAreaCodigo.getText());
-					fFichero = archivo;
-					guardar = true;
-				} catch (FileNotFoundException ex) {
-					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-				} catch (IOException ex) {
-					Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-				} finally {
+					File archivo = fFichero;
+					if (!archivo.getName().endsWith("huq")) {
+						archivo = new File(archivo.getAbsolutePath());
+						fFichero = archivo;
+						guardar = true;
+					}
+					FileWriter escritor = null;
 					try {
-						escritor.close();
+						escritor = new FileWriter(archivo);
+						escritor.write(textAreaCodigo.getText());
+						fFichero = archivo;
+						guardar = true;
+					} catch (FileNotFoundException ex) {
+						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 					} catch (IOException ex) {
 						Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+					} finally {
+						try {
+							escritor.close();
+						} catch (IOException ex) {
+							Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+						}
 					}
+				} catch (Exception e2) {
+					guardarComo();
 				}
+				
 
 			}
 
@@ -274,7 +279,7 @@ public class InterfazPrincipal extends JFrame {
 		scrollPaneConsola.setViewportView(txtAreaConsola);
 
 		/* Linea que permite contar numero de lineas en el texArea */
-		//scrollPaneCodigo.setRowHeaderView(tln);
+		scrollPaneCodigo.setRowHeaderView(tln);
 
 		//////////////////////////////////////////////////////////////////// Action
 		///////////////////////////////////////////////////////////////////////// MENUS/////////////////////////////////////////////////////////////
