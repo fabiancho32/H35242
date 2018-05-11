@@ -128,7 +128,6 @@ public class InterfazPrincipal extends JFrame {
 				} catch (Exception e2) {
 					guardarComo();
 				}
-				
 
 			}
 
@@ -376,7 +375,7 @@ public class InterfazPrincipal extends JFrame {
 				archivo = new File(fileChooser.getSelectedFile() + ".huq");
 				fFichero = archivo;
 				guardado = true;
-				guardar=true;
+				guardar = true;
 			}
 			FileWriter escritor = null;
 			try {
@@ -384,7 +383,7 @@ public class InterfazPrincipal extends JFrame {
 				escritor.write(textAreaCodigo.getText());
 				fFichero = archivo;
 				guardado = true;
-				guardar=true;
+				guardar = true;
 			} catch (FileNotFoundException ex) {
 				Logger.getLogger(InterfazPrincipal.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (IOException ex) {

@@ -280,7 +280,7 @@ Boolean entrociclo=false;
              String tipo2=buscar(acumular.get(i).image);
 
              if(!tipo.equals(tipo2)&&validarDeclarado(acumular.get(i))==true) { 
-   			recuperacion+="Error Semantico: no se puede asignar esta variable "+acumular.get(i).image+" En la Linea "+acumular.get(i).beginLine+" en la columna "+acumular.get(i).beginColumn+" no es del mismo tipo: "+tipo2+" con la variaable:\t "+a.image+"de tipo: " +tipo+ "\n";
+   			recuperacion+="Error Semantico: no se puede asignar esta variable "+acumular.get(i).image+" En la Linea "+acumular.get(i).beginLine+" en la columna "+acumular.get(i).beginColumn+" no es del mismo tipo: "+tipo2+" con la variable:"+a.image+" de tipo: " +tipo+"\n";
    			entrociclo=true;
    			}else
    			verificarAsignacion(acumular.get(i));		 
