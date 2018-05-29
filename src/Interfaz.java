@@ -1,17 +1,8 @@
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
-
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -25,17 +16,21 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JMenuBar;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTextPane;
-import javax.swing.JTree;
-import javax.swing.JTextArea;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JLabel;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 public class Interfaz extends JFrame {
 
@@ -254,12 +249,12 @@ public class Interfaz extends JFrame {
 				try {
 					@SuppressWarnings("static-access")
 					SimpleNode variable = analizador.Programa();
-					// variable.dump("");
-					root = new DefaultMutableTreeNode(variable.toString());
+					//variable.dump("");
+					root = new DefaultMutableTreeNode(variable);
 					modelo = new DefaultTreeModel(root);
-					tree.setModel(modelo);
+					llenarArbol(variable, root);
 					modelo.reload();
-					llenarArbol(variable, null);
+					tree.setModel(modelo);
 					recuperacion = analizador.getRecuperacion();
 					if (recuperacion.equals(""))
 						textAreaConsola.setText("Compilación finalizada.");
@@ -278,6 +273,8 @@ public class Interfaz extends JFrame {
 			}
 
 			private ArrayList<Node> hijosArray(Node padre) {
+				clearArbol();
+				
 				ArrayList<Node> hijos = new ArrayList<>();
 
 				for (int i = 0; i < padre.jjtGetNumChildren(); i++) {
@@ -287,27 +284,12 @@ public class Interfaz extends JFrame {
 			}
 
 			private void llenarArbol(Node node, DefaultMutableTreeNode dnode) {
-
-				if (node.toString().equals("Programa")) {
-
-					if (node.jjtGetNumChildren() != 0) {
-						for (Node nodoAux : hijosArray(node)) {
-							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
-							root.add(new DefaultMutableTreeNode(dmnode));
-							modelo.reload();
-							llenarArbol(nodoAux, dmnode);
-						}
-					}
-
-				} else {
-
-					if (node.jjtGetNumChildren() != 0) {
-						for (Node nodoAux : hijosArray(node)) {
-							DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux);
-							root.add(new DefaultMutableTreeNode(dmnode));
-							modelo.reload();
-							llenarArbol(nodoAux, dmnode);
-						}
+				if (node.jjtGetNumChildren() != 0) {
+					for (Node nodoAux : hijosArray(node)) {
+						DefaultMutableTreeNode dmnode = new DefaultMutableTreeNode(nodoAux.toString());
+						dnode.add(dmnode);
+						modelo.reload();
+						llenarArbol(nodoAux, dmnode);
 					}
 				}
 			}
