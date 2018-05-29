@@ -6,17 +6,16 @@ options
   static = true;
 }
 
-
-PARSER_BEGIN(AnalizadorSintactico)
+PARSER_BEGIN(comp)
 import java.util.ArrayList;
-public class AnalizadorSintactico
+public class comp
 {
   static String recuperacion="";
    public static ArrayList<contenedor> contenedores= new ArrayList<contenedor>();
    static String tipo="";
    public static contenedor c;
 
- static  Token operador;
+   static  Token operador;
  static Token D1;
  static Token D2;
 static int cambio=0;
@@ -24,55 +23,76 @@ static int cambio=0;
 static Boolean activo=false;
  static Boolean activoif=false;
  static Token asignar;
-static Token asignar_id; 
+static Token asignar_id;
 
 
-  public static String getRecuperacion() {
-	return recuperacion;
+  public static ArrayList<Token> getAcumular() {
+	return acumular;
+}
+
+public static void setAcumular(ArrayList<Token> acumular) {
+	comp.acumular = acumular;
+}
+
+
+  public static ArrayList<contenedor> getContenedores() {
+	return contenedores;
+}
+
+public static void setContenedores(ArrayList<contenedor> contenedores) {
+	comp.contenedores = contenedores;
+}
+ 
+  
+  public static String getRecuperacion()
+  {
+    return recuperacion;
   }
 
-  public static void setRecuperacion(String recuperacion) {
-	AnalizadorSintactico.recuperacion = recuperacion;
+  public static void setRecuperacion(String recuperacion)
+  {
+    comp.recuperacion = recuperacion;
   }
 
   
-  public static void error_skipto(int kind)
+ public static void error_skipto(int kind)
   {
+	
     ParseException e = generateParseException(); // se genera el objeto excepción
-	recuperacion=recuperacion.concat(e.toString()+"\n");
+    recuperacion= recuperacion.concat(e.toString()+"\n");
     System.out.println(e.toString()); // se imprime el mensaje de error
     Token t;
     do
     {
       t = getNextToken();
+       System.out.println("hola"+t);
     }
-    while (t.kind != kind && t.kind==EOF);
+  while (t.kind != kind && t.kind==FINARCH);
   }
-  
+    
   public static void main(String args []) throws ParseException
   {
-    try
-    {
-      System.out.println("Ingrese el código a analizar:");
-      AnalizadorSintactico analizador = new AnalizadorSintactico(System.in);
-      SimpleNode variable = analizador.Programa();
-      //variable.dump("");
-    System.out.println(recuperacion);
- 
-      for (int i = 0; i < contenedores.size(); i++) {
-		System.out.println(contenedores.get(i).getNombre());    	  
+
+	try
+	{
+	  System.out.println("Ingrese el código a analizar:");
+	  comp analizador = new comp(System.in);
+	  SimpleNode variable= analizador.Programa();
+	  variable.dump("");
+	  System.out.println("Se ha compilado con éxito");
+	}
+	catch(ParseException e)
+	{
+	  System.err.println("Se han encontrado errores");
+	  System.err.println(e.getMessage());
+	  
 	}
 
-	
+  }
 
-      System.out.println("Se ha compilado con éxito");
-    }
-    catch (ParseException e)
-    {
-      System.err.println("Se han encontrado errores");
-      System.err.println(e.getMessage());
-    }
-  }//
+
+
+//semantico
 
 
 //busca si ya esta el token
@@ -280,7 +300,7 @@ Boolean entrociclo=false;
              String tipo2=buscar(acumular.get(i).image);
 
              if(!tipo.equals(tipo2)&&validarDeclarado(acumular.get(i))==true) { 
-   			recuperacion+="Error Semantico: no se puede asignar esta variable "+acumular.get(i).image+" En la Linea "+acumular.get(i).beginLine+" en la columna "+acumular.get(i).beginColumn+" no es del mismo tipo: "+tipo2+" con la variable:"+a.image+" de tipo: " +tipo+"\n";
+   			recuperacion+="Error Semantico: no se puede asignar esta variable "+acumular.get(i).image+" En la Linea "+acumular.get(i).beginLine+" en la columna "+acumular.get(i).beginColumn+" no es del mismo tipo: "+tipo2+" con la variaable:\t "+a.image+"de tipo: " +tipo+ "\n";
    			entrociclo=true;
    			}else
    			verificarAsignacion(acumular.get(i));		 
@@ -350,138 +370,115 @@ return false;
 
 
 
-}//class
 
-PARSER_END(AnalizadorSintactico)
 
-/* Espacio en blanco, saltos de linea, tabulares */
-SKIP :
+
+
+
+
+
+
+
+
+
+  
+}
+
+PARSER_END(comp)
+
+
+SKIP:   /* Whitespace */
 {
-  " "
-| "\t"
+  "\t"
 | "\n"
 | "\r"
-| "\f"
-| < COMENTARIOS : ("##") (~[ "#" ])* ("##") >
+| " "
+| < COMENTARIO : ("##") (~[ "#" ])* ("##") >
 }
 
-TOKEN : /* OPERATORS */
+TOKEN:
 {
-  < ASIGNACION : "=" >
-| < DIFERENTE : "!=" >
-| < MAYORQUE : ">" >
-| < MENORQUE : "<" >
+
+ <SI: "Si">
+| <ENTONCES: "Entonces">
+| <FINSI: "FinSi">
+| < DELOCONTRARIO : "Sino" >
+| < FINDELOCONTRARIO : "FinSino" >
+| < ASIGNAR: "=" >
+| < COMPARAR : "==" >
+| <MAYORQ: ">">
+| <MENORQ: "<">
 | < MAYORIGUAL : ">=" >
 | < MENORIGUAL : "<=" >
-| < COMPARAR : "==" >
+| < DIFERENTE : "!=" >
+| <COMILLA: "\"">
+| <ABREC: "[">
+| <CIERRAC: "]">
 | <ADD_OP: "+" | "-">
 | <MULT_OP: "*" | "/">
-}
-
-TOKEN : /*TERMINAL DE LINEA*/
-{
-  < TERMINALDELINEA : "." >
-}
-
-TOKEN : /*PALABRAS RESERVADAS*/
-{
-  < ENTERO : "Numero" >
-| < STRING : "Cadena" >
-| < CONDICIONALSI : "Si" >
-| < CONDICIONALFINSI : "FinSi" >
-| < CONDICIONALDELOCONTRARIO : "Sino" >
-| < CONDICIONALFINDELOCONTRARIO : "FinSino" >
-| < CONDICIONALENTONCES : "Entonces" >
-| < ESCRIBIR : "Escribir" >
-| < LEER : "Leer" >
-}
-
-TOKEN : /*IDENTIFICADORES EJEMPLO a, casa, clase1*/
-{
-  < IDENTIFICADOR : ([ "a"-"z", "A"-"Z" ])([ "a"-"z", "A"-"Z", "0"-"9" ])* >
-| < #DIGIT : [ "0"-"9" ] >
-| < #LMINUS : [ "a"-"z" ] >
-}
-
-TOKEN : /*NUMEROS EJEMPLO 1, 1234, 987*/
-{
-  < NUMEROENTERO : 
-    (
-    [ "-" ]
-    )? 
-    (< DIGIT >)+ >
+| <NUMERO: "Numero">
+| <CADENA: "Cadena">
+| <LEER: "Leer">
+| <ESCRIBIR: "Escribir">
+| <NUMBER: (["0"-"9"])+>
+|  < ID: [ "a"-"z", "A"-"Z", "_" ] ([ "a"-"z", "A"-"Z", "0"-"9", "_" ])* >
+| < CADENADETEXTO : ("\"") (~[ "\"" ])* ("\"") >
+| < CONCATENAR :"@" >
+| <TERMINALDELINEA: "." >
+| <FINARCH: "?">
+| < COMA:  "," >
 }
 
 
 
-TOKEN : /*CADENA DE TEXTO*/
-{
-  < CADENADETEXTO : ([ "\"" ]) (~[ "\"" ])* ([ "\"" ]) >
-}
-
-TOKEN : /*CONCATENAR*/
-{
-  < CONCATENACION :"@">
-}
-
-TOKEN : /*Simbolos*/
-{
-  < CORCHETEABRE : "[" >
-| < CORCHETECIERRA : "]" >
-| < COMA : "," >
-}
-
-SimpleNode Programa() :
+SimpleNode Programa():
 {}
 {
-  try
-  {
-    listadoSentencias()<EOF>{return jjtThis;}
+
+try { 
+	Sentencias()<EOF>
+    {  return jjtThis; }
   }
-  catch (ParseException e)
-  {
-    error_skipto(TERMINALDELINEA);
-    return jjtThis;
-  }  
+ catch(ParseException e) {
+   error_skipto(TERMINALDELINEA);
+   return jjtThis;
+ }
+	
 }
 
-void listadoSentencias() :
-{Token t;}
+void Sentencias(): {Token t;}
 {
-	try
-	{
-	  SentenciaSmp()     
-  	  [listadoSentencias()]
-	}
-   catch (ParseException e)
-   {
-     error_skipto(TERMINALDELINEA);     
-   }
+  SimpleStm()  [Sentencias()] 
 }
 
-void SentenciaSmp() :
-{}
+void SimpleStm(): {}
 {
-  condicional()
-| escribir()
-| asignacion()
-| declaracion()
+  try { 
+   declaracion() | escribir() | asignacion() |condicional()
+ }
+ catch(ParseException e) {
+   error_skipto(TERMINALDELINEA);
+ }
 }
+
+
+
+
 
 void condicional() :
 {  Token t; D1=new Token();D2=new Token();operador= new Token();cambio=0;activoif=true; }
 {
-  t = < CONDICIONALSI > {jjtThis.value = t.image;}#CONDICIONALSI(true)
+  t = < SI > {jjtThis.value = t.image;}#CONDICIONALSI(true)
   dat()
-  condicionales()
+  opcion()
   dat()
-  t = < CONDICIONALENTONCES >{validar(D1,D2,operador);jjtThis.value = t.image;activoif=false; }#CONDICIONALENTONCES(true)
-  listadoSentencias()
+  t = < ENTONCES >{validar(D1,D2,operador);jjtThis.value = t.image;activoif=false; }#CONDICIONALENTONCES(true)
+  SimpleStm()
   [
-  t = < CONDICIONALDELOCONTRARIO >{jjtThis.value = t.image;}#CONDICIONALDELOCONTRARIO(true)
-  listadoSentencias()
+  t = < DELOCONTRARIO >{jjtThis.value = t.image;}#CONDICIONALDELOCONTRARIO(true)
+  Sentencias()
   ]
-  t = < CONDICIONALFINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
+  t = < FINSI >{  jjtThis.value = t.image;}#CONDICIONALFINSI(true)
   
 }
 
@@ -489,7 +486,7 @@ void condicional() :
 void dat():{Token t;}
 {
 
-  t = <IDENTIFICADOR>  {    jjtThis.value = t.image;
+  t = <ID>  {    jjtThis.value = t.image;
 
         if(D1!=null) {
           cambio++;
@@ -510,28 +507,30 @@ void dat():{Token t;}
     }
 
 		  }#IDENTIFICADOR(true)
-| t=< NUMEROENTERO >{    jjtThis.value = t.image;}#NUMEROENTERO(true)
+| t=< NUMBER >{    jjtThis.value = t.image;}#NUMEROENTERO(true)
 
 
 }
 
 
-void condicionales() :
-{Token t;}
+
+
+
+void opcion() : {  Token t;}
 {
-  t =< MAYORQUE>{jjtThis.value = t.image;operador=t;}#MAYORQUE(true)
-  |t=< MENORQUE>{jjtThis.value = t.image;operador=t;}#MENORQUE(true)
-  |t=< MAYORIGUAL>{jjtThis.value = t.image;operador=t;}#MAYORIGUAL(true)
-  |t=< MENORIGUAL>{jjtThis.value = t.image;operador=t;}#MENORIGUAL(true)
-  |t=< COMPARAR>{jjtThis.value = t.image;operador=t;}#COMPARAR(true)
-  |t=< DIFERENTE>{jjtThis.value = t.image;operador=t;}#DIFERENTE(true)
+  t=<MENORQ>{jjtThis.value = t.image;}  #MENORQUE(true)|t=<MAYORQ>{jjtThis.value = t.image;}  #MAYORQUE(true)
+ |t=<MAYORIGUAL>{jjtThis.value = t.image;}  #MAYORIGUAL(true)|t=<MENORIGUAL>{jjtThis.value = t.image;}  #MENORIGUAL(true)
+ |t=<COMPARAR>{jjtThis.value = t.image;}  #COMPARAR(true)|t=<DIFERENTE>{jjtThis.value = t.image;}  #DIFERENTE(true)
 }
+
+
+
 
 void asignacion() :
 {  Token t;asignar=new Token(); asignar_id=new Token(); activo=true;  }
 {
-  t = < IDENTIFICADOR >  {jjtThis.value = t.image; asignar=t; }  #IDENTIFICADOR(true)
-  t = < ASIGNACION >{jjtThis.value = t.image;}#ASIGNACION(true)
+  t = < ID >  {jjtThis.value = t.image; asignar=t; }  #IDENTIFICADOR(true)
+  t = < ASIGNAR >{jjtThis.value = t.image;}#ASIGNACION(true)
   valor()
   t =<TERMINALDELINEA>{jjtThis.value = t.image;
   if(acumular.size()==0&&asignar_id.image!=null){
@@ -543,6 +542,8 @@ void asignacion() :
 
   }#TERMINAL(true)
 }
+
+
 
 void valor() :
 {  Token t;}
@@ -556,19 +557,20 @@ void valor() :
      if(!buscar(asignar.image).equals("Cadena"))  
     recuperacion+="Error Semantico: no se puede asignar una cadena a una variable tipo Cadena:"+t.image+" En la Linea "+t.beginLine+" en la columna "+t.beginColumn+ "\n"; }
    } }  #CADENATEXTO(true)
-  [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+  [t=<CONCATENAR>{jjtThis.value = t.image;}#CONCATENACION(true)
 	concatenaciones()
 	]
-| t = <NUMEROENTERO >  {jjtThis.value = t.image;acumular.add(t); if(activo){if(buscar(asignar.image).equals("Numero")&&acumular.size()==0)asignar(asignar.image); } }  #NUMEROENTERO(true)
+| t = <NUMBER >  {jjtThis.value = t.image;acumular.add(t); if(activo){if(buscar(asignar.image).equals("Numero")&&acumular.size()==0)asignar(asignar.image); } }  #NUMEROENTERO(true)
   [operadores()] 
-| t = <IDENTIFICADOR >  {jjtThis.value = t.image;verificardeclarado(t); acumular.add(t);
+| t = <ID>  {jjtThis.value = t.image;verificardeclarado(t); acumular.add(t);
       if(!activo)
 		inicializada(t); }  #IDENTIFICADOR(true)
   [operadores()]
 | leer()
-|t= <CORCHETEABRE>{jjtThis.value = t.image;acumular.add(t); }#CORCHETEABRE(true)valor()<CORCHETECIERRA>{jjtThis.value = t.image;acumular.add(t); }#CORCHETECIERRA(true) [operadores()]
+|t= <ABREC>{jjtThis.value = t.image;acumular.add(t); }#CORCHETEABRE(true)valor()<CIERRAC>{jjtThis.value = t.image;acumular.add(t); }#CORCHETECIERRA(true) [operadores()]
 
 }
+
 
 void operadores():
 {Token t;}
@@ -579,21 +581,22 @@ void operadores():
   valor()
 }
 
+
 void leer():
 {Token t;}
 {
   t=<LEER>{jjtThis.value = t.image;}#LEER(true)
-  t=<CORCHETEABRE >{jjtThis.value = t.image;}#CORCHETEABRE(true)
-  t=<CORCHETECIERRA >{jjtThis.value = t.image;asignar(asignar.image);}#CORCHETECIERRA(true) 
+  t=<ABREC >{jjtThis.value = t.image;}#CORCHETEABRE(true)
+  t=<CIERRAC >{jjtThis.value = t.image;asignar(asignar.image);}#CORCHETECIERRA(true) 
 }
 
 void escribir() :
 {Token t;}
 {
   t = < ESCRIBIR > {jjtThis.value = t.image;}#ESCRIBIR(true)
-  t = < CORCHETEABRE >{  jjtThis.value = t.image;}#CORCHETEABRE(true)
+  t = < ABREC >{  jjtThis.value = t.image;}#CORCHETEABRE(true)
   datos() 
-  t = < CORCHETECIERRA >{  jjtThis.value = t.image;}#CORCHETECIERRA(true)
+  t = < CIERRAC >{  jjtThis.value = t.image;}#CORCHETECIERRA(true)
   t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
 }
 
@@ -601,10 +604,10 @@ void datos():
 {Token t;}
 {
 	t=<CADENADETEXTO>{jjtThis.value = t.image;}#CADENATEXTO(true)
-	[t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+	[t=<CONCATENAR>{jjtThis.value = t.image;}#CONCATENACION(true)
 	concatenaciones()
 	]
-|	t=<IDENTIFICADOR>{jjtThis.value = t.image;verificardeclarado(t);acumular.add(t);
+|	t=<ID>{jjtThis.value = t.image;verificardeclarado(t);acumular.add(t);
        if(!activo)
 		inicializada(t);
 
@@ -614,7 +617,7 @@ void datos():
 
 
 		 }#IDENTIFICADOR(true)
-	[t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+	[t=<CONCATENAR>{jjtThis.value = t.image;}#CONCATENACION(true)
 	concatenaciones()
 	]
 }
@@ -632,10 +635,10 @@ void concatenaciones():
 
   }
    }#CADENATEXTO(true)
-  [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+  [t=<CONCATENAR>{jjtThis.value = t.image;}#CONCATENACION(true)
   concatenaciones()
   ]
-| t=<IDENTIFICADOR>{jjtThis.value = t.image;verificardeclarado(t);acumular.add(t);
+| t=<ID>{jjtThis.value = t.image;verificardeclarado(t);acumular.add(t);
        if(!activo)
 		inicializada(t);
 
@@ -644,7 +647,7 @@ void concatenaciones():
             
 
 		}#IDENTIFICADOR(true)
-  [t=<CONCATENACION>{jjtThis.value = t.image;}#CONCATENACION(true)
+  [t=<CONCATENAR>{jjtThis.value = t.image;}#CONCATENACION(true)
   concatenaciones()
   ]
 }
@@ -652,13 +655,13 @@ void concatenaciones():
 void declaracion() :
 { Token t; c= new contenedor();}
 {
-  t = < ENTERO >  {    jjtThis.value = t.image; tipo=t.image;  }  #ENTERO(true)
-  t = < IDENTIFICADOR >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c);
+  t = < NUMERO >  {    jjtThis.value = t.image; tipo=t.image;  }  #ENTERO(true)
+  t = < ID >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c);
       }}#IDENTIFICADOR(true)
   [ masIds() ]
   t =<TERMINALDELINEA>{jjtThis.value = t.image; }#TERMINAL(true)
-| t = < STRING >{  jjtThis.value = t.image;tipo=t.image;}#STRING(true)
-  t = < IDENTIFICADOR >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c);
+| t = < CADENA >{  jjtThis.value = t.image;tipo=t.image;}#STRING(true)
+  t = < ID >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c);
          } }#IDENTIFICADOR(true)
   [ masIds() ]
   t =<TERMINALDELINEA>{jjtThis.value = t.image;}#TERMINAL(true)
@@ -668,6 +671,6 @@ void masIds() :
 {  Token t; c=new contenedor();}
 {
   t = < COMA >  {    jjtThis.value = t.image;  }  #COMA(true)
-  t = < IDENTIFICADOR >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c); }                 }#IDENTIFICADOR(true)
+  t = < ID >{  jjtThis.value = t.image;if(verificarRepetido(t)){ c.setTipo(tipo);c.setNombre(t.image);c.setTokenvalor(t);c.setAsignacion(false);contenedores.add(c); }                 }#IDENTIFICADOR(true)
   [ masIds() ]
 }
