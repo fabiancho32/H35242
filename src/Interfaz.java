@@ -228,10 +228,6 @@ public class Interfaz extends JFrame {
 
 				}
 
-				// JOptionPane.showMessageDialog(frame, "Guarde los ultimos
-				// cambios antes de
-				// compilar", "Oops...!", JOptionPane.INFORMATION_MESSAGE);
-
 			}
 
 			private void compilar() {
